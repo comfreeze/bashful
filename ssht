@@ -9,6 +9,7 @@ USAGE_TITLE="SSH Toolkit"
 SSH=$( which ssh )
 SCP=$( which scp )
 SSHFS=$( which sshfs )
+UNMOUNT=$( which fusermount )
 PORT=22
 
 #
@@ -48,6 +49,7 @@ PARAMS=(
 #  target      - Name of the target method, variable, etc
 #  description - Raw description of the action
 ACTIONS=(
+  "a|add=function=add_host=Define a new host record."
   "c|connect=function=connect=Connect to a given host."
   "m|mount=function=mount=Mount a target host at the defined path."
   "u|unmount=function=unmount=Unmount an existing host mount."
@@ -59,7 +61,7 @@ ACTIONS=(
 ###################
 HOSTS=(
   cfz-nas-1=root@10.10.15.20
-  cfz-nas-12=sandwyrm@10.10.15.30:2222
+  cfz-nas-12=nas-12:2222
   grapevine1=core@10.10.255.1
   grapevine2=core@10.10.255.2
   peach=core@10.10.15.201
@@ -91,6 +93,7 @@ MOUNTS=(
 ###################
 require verbosity $*
 require array
+require string
 require params
 require actions
 require utils
@@ -103,55 +106,88 @@ _apply_options () {
   apply_options COMMANDS $*;
 }
 
+add_host () {
+  dump_method $*
+
+}
+
+usage_add_host () {
+  dump_method $*
+  echo "Usage add host"
+}
+
 connect () {
+  dump_method $*
   for TARGET in "$@"; do
     HOST=$( filter_array HOSTS ${TARGET} )
     if [ ! -z "${HOST}" ]; then
-      _HOST="${HOST%%:*}": _PORT="${HOST##*:}"; _HOST=${_HOST//:/}
-      [ ! -z "${_PORT}" ] && apply_option _HOST "-p ${_PORT}"
       echo "Connecting to ${TARGET} (${HOST})"
-      verbose 2 ${SSH} ${_HOST}
-      ${SSH} ${_HOST}
+      OPTS=( $( explode_array ":" ${HOST} ) )
+      if (( "${#OPTS[@]}" >= "2" )); then
+        HOST="${OPTS[0]}"; _PORT="${OPTS[1]}";
+        [ ! -z "${_PORT}" ] && prepend_option HOST "-p ${_PORT}"
+      fi
+      apply_option SSH "$( verboses )"
+      verbose 0 ${SSH} ${HOST}
+      ${SSH} ${HOST}
     fi
   done
 }
 
 usage_connect () {
+  dump_method $*
   echo "Usage connecting"
 }
 
 mount () {
+  dump_method $*
   for TARGET in "$@"; do
     HOST=$( filter_array HOSTS ${TARGET} )
     MOUNT=$( filter_array MOUNTS ${TARGET} )
     if [ ! -z "${HOST}" ]; then
       echo "Mounting ${HOST} => ~/${TARGET}"
-      _HOST="${HOST%%:*}": _PORT="${HOST##*:}"; _HOST=${_HOST//:/}
-      [ ! -z "${_PORT}" ] && apply_option _HOST "-o port=${_PORT}"
-      verb 2 apply_option _HOST "-d -o sshfs_debug -o workaround=all"
-      verbose 2 ${SSHFS} ${_HOST}:${MOUNT} ~/${TARGET}
-      ${SSHFS} ${_HOST}:${MOUNT} ~/${TARGET}
+      OPTS=( $( explode_array ":" ${HOST} ) )
+      if (( "${#OPTS[@]}" >= "2" )); then
+        HOST="${OPTS[0]}"; _PORT="${OPTS[1]}";
+        [ ! -z "${_PORT}" ] && prepend_option HOST "-o port=${_PORT}"
+      fi
+      verb 2 prepend_option HOST "-d -o sshfs_debug -o workaround=all"
+      verb 1 apply_option SSHFS "-o ssh_command=\"${SSH} $( verboses )\" "
+      verbose 1 ${SSHFS} ${HOST}:${MOUNT} ~/${TARGET}
+      ${SSHFS} ${HOST}:${MOUNT} ~/${TARGET}
     fi
   done
 }
 
 usage_mount () {
+  dump_method $*
   echo "Usage mounting"
 }
 
 unmount () {
-  echo "Unmounting"
+  dump_method $*
+  for TARGET in "$@"; do
+    MOUNT=$( filter_array MOUNTS ${TARGET} )
+    if [ ! -z "${MOUNT}" ]; then
+      verbose 0 "Unmounting ~/${TARGET}"
+      verbose 1 ${UNMOUNT} -u ~/${TARGET}
+      ${UNMOUNT} -u ~/${TARGET}
+    fi
+  done
 }
 
 usage_unmount () {
+  dump_method $*
   echo "Usage unmounting"
 }
 
 remount () {
+  dump_method $*
   echo "Unmounting"
 }
 
 usage_remount () {
+  dump_method $*
   echo "Usage remounting"
 }
 

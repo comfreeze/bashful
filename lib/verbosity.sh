@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+#
+# CONFIG
+###################
+_V_DUMP=2
+_V_DUMP_PRETTY=2
+_V_DUMP_METHOD=1
+#
+# LIBRARIES
+###################
 require output
 #
 # Verbosity helpers
@@ -9,12 +18,18 @@ verbose() {
     shift; stderr $*
   fi
 }
+export -f verbose
 verbosef() {
   if (( "${_V}" >= "$1" )); then
     shift; stderrf $*
   fi
 }
-export -f verbose
+export -f verbosef
+verboses() {
+  local level; level="%${_V}s"
+  (( "${_V}" >= "1" )) && echo -n "-$( printf ${level} | tr " " "v" )"
+}
+export -f verboses
 verb() {
   if (( "${_V}" >= "$1" )); then
     shift; $*
@@ -25,11 +40,11 @@ export -f verb
 # Debugging helpers
 #
 dump () {
-  verbose 2 "\$$1=\"${!1}\""
+  verbose ${_V_DUMP} "\$$1=\"${!1}\""
 }
 export -f dump
 dump_method () {
-  verbose 4 "Method: ${FUNCNAME[1]} $*"
+  verbose ${_V_DUMP_METHOD} "Method: ${FUNCNAME[1]} $*"
 }
 export -f dump_method
 dump_array () {
@@ -38,21 +53,21 @@ dump_array () {
 export -f dump_array
 dump_array_pretty () {
   eval "target=( \"\${${1}[@]}\" )"
-  verbose 1 "$1=("
+  verbose ${_V_DUMP_PRETTY} "$1=("
   for ITEM in "${target[@]}"; do
-    verbosef 1 '\t%s\n' "${ITEM}"
+    verbosef ${_V_DUMP_PRETTY} '\t%s\n' "${ITEM}"
   done
-  verbose 1 ')'
+  verbose ${_V_DUMP_PRETTY} ')'
 }
 export -f dump_array_pretty
 dump_assoc_array () {
   eval "target=( \"\${${1}[@]}\" )"
-  verbose 1 "$1=("
+  verbose ${_V_DUMP_PRETTY} "$1=("
   for ITEM in "${target[@]}"; do
     KEY="${ITEM%%=*}"; VALUE="${ITEM##*=}";
-    verbose 1 "${KEY}"
+    verbose ${_V_DUMP_PRETTY} "${KEY}"
   done
-  verbose 1 ")"
+  verbose ${_V_DUMP_PRETTY} ")"
 }
 export -f dump_assoc_array
 #

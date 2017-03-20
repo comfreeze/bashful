@@ -1,0 +1,177 @@
+#!/bin/bash
+
+#
+# CONFIG
+###################
+NO_KEY="-o PubKeyAuthentication=no"
+ANON_HOST="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+USAGE_TITLE="SSH Toolkit"
+SSH=$( which ssh )
+SCP=$( which scp )
+SSHFS=$( which sshfs )
+PORT=22
+
+#
+# USE REQUIRE
+###################
+source $( dirname -- "$0" )/lib/require.sh
+
+#
+# COMMANDS
+###################
+COMMANDS=(
+  SSH
+  SCP
+  SSHFS
+)
+
+#
+# PARAMETERS
+###################
+# FORMAT: (equals separator)
+#  flag(s)     - Pipe separated list of flags
+#  type        - Type of action, typically boolean or string
+#  target      - Name of the target variable, array, etc
+#  description - Raw description of the feature
+PARAMS=(
+  "-a|--anonymous=_ANONYMOUS=boolean=Support anonymous hosts, ignore host checks."
+  "-n|--no-key=_NO_PUBKEY=boolean=Disable public key based authentication methods."
+  "-p|--port=PORT=string=Specify a custom port to use for connections."
+)
+
+#
+# ACTIONS
+###################
+# FORMAT: (equals separator)
+#  keyword(s)  - Pipe separated list of action keywords that trigger it
+#  type        - Type of action, typically function/method
+#  target      - Name of the target method, variable, etc
+#  description - Raw description of the action
+ACTIONS=(
+  "c|connect=function=connect=Connect to a given host."
+  "m|mount=function=mount=Mount a target host at the defined path."
+  "u|unmount=function=unmount=Unmount an existing host mount."
+  "r|remount=function=remount=Remount an existing host mount."
+)
+
+#
+# HOSTS
+###################
+HOSTS=(
+  cfz-nas-1=root@10.10.15.20
+  cfz-nas-12=sandwyrm@10.10.15.30:2222
+  grapevine1=core@10.10.255.1
+  grapevine2=core@10.10.255.2
+  peach=core@10.10.15.201
+  grape=core@10.10.15.211
+  melon=core@10.10.15.221
+  peach-comfreeze=comfreeze@10.10.15.201
+  peach-impekable=impekable@10.10.15.201
+)
+
+##sshfs ${OPTS} comfreeze@10.10.15.201:'/home/comfreeze' ~/peach
+##sshfs ${OPTS} impekable@10.10.15.201:'/home/impekable' ~/peach-impekable
+#
+# MOUNTS
+###################
+MOUNTS=(
+  cfz-nas-1='/data/'
+  cfz-nas-12='/'
+  grapevine1='.'
+  grapevine2='.'
+  peach='.'
+  grape='.'
+  melon='.'
+  peach-comfreeze='/home/comfreeze'
+  peach-impekable='/home/impekable'
+)
+
+#
+# LIBRARIES
+###################
+require verbosity $*
+require array
+require params
+require actions
+require utils
+
+#
+# CUSTOM METHODS
+###################
+_apply_options () {
+  dump_method $*
+  apply_options COMMANDS $*;
+}
+
+connect () {
+  for TARGET in "$@"; do
+    HOST=$( filter_array HOSTS ${TARGET} )
+    if [ ! -z "${HOST}" ]; then
+      _HOST="${HOST%%:*}": _PORT="${HOST##*:}"; _HOST=${_HOST//:/}
+      [ ! -z "${_PORT}" ] && apply_option _HOST "-p ${_PORT}"
+      echo "Connecting to ${TARGET} (${HOST})"
+      verbose 2 ${SSH} ${_HOST}
+      ${SSH} ${_HOST}
+    fi
+  done
+}
+
+usage_connect () {
+  echo "Usage connecting"
+}
+
+mount () {
+  for TARGET in "$@"; do
+    HOST=$( filter_array HOSTS ${TARGET} )
+    MOUNT=$( filter_array MOUNTS ${TARGET} )
+    if [ ! -z "${HOST}" ]; then
+      echo "Mounting ${HOST} => ~/${TARGET}"
+      _HOST="${HOST%%:*}": _PORT="${HOST##*:}"; _HOST=${_HOST//:/}
+      [ ! -z "${_PORT}" ] && apply_option _HOST "-o port=${_PORT}"
+      verb 2 apply_option _HOST "-d -o sshfs_debug -o workaround=all"
+      verbose 2 ${SSHFS} ${_HOST}:${MOUNT} ~/${TARGET}
+      ${SSHFS} ${_HOST}:${MOUNT} ~/${TARGET}
+    fi
+  done
+}
+
+usage_mount () {
+  echo "Usage mounting"
+}
+
+unmount () {
+  echo "Unmounting"
+}
+
+usage_unmount () {
+  echo "Usage unmounting"
+}
+
+remount () {
+  echo "Unmounting"
+}
+
+usage_remount () {
+  echo "Usage remounting"
+}
+
+#dump_assoc_array 1 MOUNTS
+#verbose 0 $( filter_array MOUNTS melon grape )
+#TARGETS=$( filter_array MOUNTS $@ )
+#dump_array TARGETS
+
+#
+# LOGIC
+###################
+require help $*
+config_params PARAMS
+config_actions ACTIONS
+eval_params $*
+
+#
+# APPLY OPTIONS
+###################
+[[ "${_ANONYMOUS}" = "true" ]] && _apply_options ${ANON_HOST}
+[[ "${_NO_PUBKEY}" = "true" ]] && _apply_options ${NO_KEY}
+
+eval_actions $*

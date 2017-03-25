@@ -33,7 +33,7 @@ aws_login() {
     fi
   fi
   LOGIN=`${AWSCMD} --region ${_CONFIG_AWSREG} ecr get-login`
-  eval "${LOGIN//$'\r'/}"
+  echo "${LOGIN//$'\r'/}"
 }
 export -f aws_login
 #

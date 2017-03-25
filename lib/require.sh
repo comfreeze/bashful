@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
 shopt -s extglob
+special=$( echo @|tr @ '\034' );
+
 #
-# Variables/Options
-#
+# CONFIG
+###################
 _ENVFILE="local.env"
 _V=0
 _FAKE=false
@@ -12,6 +14,14 @@ _INTERACTIVE=false
 _LIB_DIR="lib"
 _EXTENSION=".sh"
 _SCRIPT_PATH=$( dirname -- "$0" )
+_COMMANDS=()
+_PREFIX_PARAM="param_"
+_PREFIX_ACTION="action_"
+_PREFIX_DESCRIPTION="describe_"
+
+#
+# MODULE LOGIC
+###################
 #
 # Define our base require logic helper
 #
@@ -26,8 +36,18 @@ export -f require
 #
 # Load environment configuration
 #
-require verbosity
+require verbosity $*
 require output
 require utils
 require filesystem
-load_config "${_SCRIPT_PATH}/${_ENVFILE}"
+require config
+
+load_config file "${_SCRIPT_PATH}/${_ENVFILE}"
+
+run () {
+  dump_method $*
+  eval_request $*
+  local act;    act="$( get_action )";
+  dump act
+  ${act}
+}

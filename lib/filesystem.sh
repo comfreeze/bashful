@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
 
 #
-# Configuration source loader
-#
-load_config () {
-  if [ -f "$1" ]; then
-    verbose 1 "Loading configuration file: ${1}"
-    source "$1"
-  fi
-}
-export -f load_config
-save_local() {
-  [[ ! -f "${_ENVFILE}" ]] && echo "#!/usr/bin/env bash" > "${_ENVFILE}"
-  echo "Do you wish to save this to ${_ENVFILE}? [Y/n]:"; read choice
-  case "${choice}" in
-    y|yes)
-      verbose 3 "Writing value of $1 to ${_ENVFILE}"
-      echo "$1" >> "${_ENVFILE}"
-    ;;
-  esac
-}
-export -f save_local
+# CONFIG
+###################
 
+#
+# LIBRARIES
+###################
+require yaml
+#
+# Generating a temporary working file
+#
+working_file () {
+  echo $( mktemp "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX" )
+}
+export -f working_file
+#
+# Generating a temporary working directory
+#
+working_directory () {
+  echo $( mktemp -d "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX" )
+}
+export -f working_directory
 #
 # Process a list of files and append to array
 #
@@ -52,3 +52,17 @@ multidir () {
   done
 }
 export -f multidir
+
+read_file () {
+  dump_method $*
+  local filename;   filename=$1;    shift
+  local start;      start=$1;       shift
+  local finish;     finish=$1;      shift
+  local section;    section="";     shift
+  while read -r line; do
+    [[ ${line} == ${start}* ]]      && printline="yes"
+    [[ "${printline}" == "yes" ]]   && echo "${line}"
+    [[ ${line} == ${finish}* ]]     && printline="no"
+  done < "${filename}"
+}
+export -f read_file

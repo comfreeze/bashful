@@ -5,7 +5,9 @@
 #
 in_string () {
   dump_method $*
-  [[ "${2/${1}}" = "${2}" ]] && echo "false";
+  local t;  t=${1};  shift
+  local s;  s=${1};  shift
+  [[ "${s/${t}}" = "${s}" ]] && echo "false";
   echo "true";
 }
 export -f in_string

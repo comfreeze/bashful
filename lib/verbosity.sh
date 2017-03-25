@@ -88,12 +88,22 @@ export -f dump_assoc_array
 usage_verbosity ()      { echo "-v|-vv|-vvv|-vvvv|-vvvvv|-vvvvvv"; }
 describe_verbosity ()   { echo "Support various verbosity level specification."; }
 param_verbosity ()      { _V="$( grep -o "v" <<< "$1" | wc -l )"; } #echo "Verbosity: ${_V}"; }
-help_verbosity ()       { echo "More detailed help here."; }
+help_verbosity ()       { cat << EOF
+
+Description:
+  $( describe_verbosity )  Manages the level of debugging output provided, higher values provide a lot of output.
+EOF
+}
 
 usage_fake ()           { echo "-f|--fake"; }
 describe_fake ()        { echo "Replace commands with echo equivalents to output what would be run."; }
 param_fake ()           { _FAKE=true; }
-help_fake ()            { echo "More detailed help here."; }
+help_fake ()            { cat << EOF
+
+Description:
+  $( describe_fake )  Signals to the system that instead of executing calls, each call should be printed instead.
+EOF
+}
 
 #
 # Verbosity parameter parsing and to-level config

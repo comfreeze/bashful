@@ -22,7 +22,8 @@ usage_command() {
   dump_method $*
   cat << EOF
 ${USAGE_TITLE}
- $( basename $0 ) (options) [actions] (parameters)
+
+ $( basename $0 ) $*
 EOF
 }
 export -f usage_command
@@ -81,10 +82,17 @@ usage_advanced() {
 EOF
 }
 _load_usage () {
+  dump_method $*
   level=$1; shift
   usage=$1; shift
 #  eval "verb ${level} usage_${usage} $*"
-  eval "usage_${usage} $*"
+  echo "$( usage_${usage} $* )"
+}
+_load_help () {
+  level=$1; shift
+  usage=$1; shift
+#  eval "verb ${level} usage_${usage} $*"
+  echo "$( help_${usage} $* )"
 }
 #
 # Capture defined usage functions
@@ -98,7 +106,8 @@ usage () {
   for FUNC in "${_USAGE_FUNCS[@]}"; do
     if [[ "${FUNC}" = "$2" ]]; then
       local name; name=$2; shift
-      _load_usage 0 ${name} $*
+      _load_usage 0 command "$( get_usage "${name}" )"
+      _load_help 0 ${name} $*
       exit 0
     fi
   done
@@ -115,14 +124,10 @@ usage () {
       _load_usage 0 options
     ;;
     *)
-      _load_usage 0 command
-      echo
+      _load_usage 0 command "(options) [actions] (parameters)"
       _load_usage 0 options
-      echo
       _load_usage 0 actions
-      echo
       _load_usage 1 details
-      echo
       _load_usage 2 advanced
       ;;
   esac

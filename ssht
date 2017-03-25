@@ -121,17 +121,35 @@ action_remount () {
 param_anonymous ()      { _apply_options "${ANON_HOST}"; }
 usage_anonymous ()      { echo "-a|--anonymous"; }
 describe_anonymous ()   { echo "Support anonymous hosts, ignore host checks."; }
-help_anonymous ()       { echo "More detailed help here."; }
+help_anonymous ()       { cat << EOF
+
+Description:
+  $( describe_anonymous )  Applies any options stored in ANON_HOST, currently:
+
+    ${ANON_HOST}
+
+EOF
+}
 # Identity
 param_no_key ()         { _apply_options "${NO_KEY}"; }
 usage_no_key ()         { echo "-n|--no-key"; }
 describe_no_key ()      { echo "Disable public key based authentication methods."; }
-help_no_key ()          { echo "More detailed help here."; }
+help_no_key ()          { cat << EOF
+
+Description:
+  $( describe_no_key )  This allows immediate password login to avoid false negatives in poor key scenarios.
+EOF
+}
 # Port
 param_port ()           { _PORT="$1"; }
 usage_port ()           { echo "-p|--port ####"; }
 describe_port ()        { echo "Specify a custom port to use for connections."; }
-help_port ()            { echo "More detailed help here."; }
+help_port ()            { cat << EOF
+
+Description:
+  $( describe_port )  Provides the most basic input for port specification.
+EOF
+}
 # Overwrite Faking
 param_fake ()           { prepend_options COMMANDS "echo "; }
 
@@ -142,35 +160,45 @@ param_fake ()           { prepend_options COMMANDS "echo "; }
 usage_add_host ()       { echo "a|add|add_host ${_REF_FORMAT}"; }
 describe_add_host ()    { echo "Define a new host record"; }
 help_add_host ()        { cat << EOF
- "More detailed help here.";
+
+Description:
+  $( describe_add_host )  Guided tools for creating ssh config records.
 EOF
 }
 # Connect to a target
 usage_connect ()        { echo "c|connect ${_REF_FORMAT}"; }
 describe_connect ()     { echo "Connect to a defined host"; }
 help_connect ()         { cat << EOF
- "More detailed help here.";
+
+Description:
+  $( describe_connect )  Basic connection logic
 EOF
 }
 # Mount a target
 usage_mount ()          { echo "m|mount ${_REF_FORMAT}"; }
 describe_mount ()       { echo "Mount a defined host share"; }
 help_mount ()           { cat << EOF
- "More detailed help here.";
+
+Description:
+  $( describe_mout )  SSHFS/Fuse based mount management.
 EOF
 }
 # Unmount a target
 usage_unmount ()        { echo "u|unmount ${_REF_FORMAT}"; }
 describe_unmount ()     { echo "Unount a defined host share"; }
 help_unmount ()         { cat << EOF
- "More detailed help here.";
+
+Description:
+  $( describe_unmount )  SSHFS/Fuse based mount management.
 EOF
 }
 # Remount a target
 usage_remount ()        { echo "r|remount ${_REF_FORMAT}"; }
 describe_remount ()     { echo "Remount a defined host share"; }
 help_remount ()         { cat << EOF
- "More detailed help here.";
+
+Description:
+  $( describe_remount )  SSHFS/Fuse based mount management.
 EOF
 }
 

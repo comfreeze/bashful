@@ -3,13 +3,13 @@
 #
 # CONFIG
 ###################
-NO_KEY="-o PubKeyAuthentication=no"
-ANON_HOST="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 USAGE_TITLE="SSH Toolkit"
 SSH="$( which ssh )"
 SCP="$( which scp )"
 SSHFS="$( which sshfs )"
 UNMOUNT="$( which fusermount ) -u "
+NO_KEY="-o PubKeyAuthentication=no"
+ANON_HOST="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 PORT=22
 _REF_FORMAT="name|alias|ip-address:port"
 
@@ -30,42 +30,18 @@ COMMANDS=(
 #
 # HOSTS
 ###################
-HOSTS=(
-  cfz-nas-1=root@10.10.15.20
-  cfz-nas-12=10.10.15.30:2222
-  grapevine1=10.10.255.1
-  grapevine2=10.10.255.2
-  peach=10.10.255.201
-  grape=10.10.255.211
-  melon=10.10.255.221
-  peach-comfreeze=comfreeze@10.10.255.201
-  peach-impekable=impekable@10.10.255.201
-)
+HOSTS=()
 
-##sshfs ${OPTS} comfreeze@10.10.15.201:'/home/comfreeze' ~/peach
-##sshfs ${OPTS} impekable@10.10.15.201:'/home/impekable' ~/peach-impekable
 #
 # MOUNTS
 ###################
-MOUNTS=(
-  cfz-nas-1='/data/'
-  cfz-nas-12='/'
-  grapevine1='.'
-  grapevine2='.'
-  peach='.'
-  grape='.'
-  melon='.'
-  peach-comfreeze='/home/comfreeze'
-  peach-impekable='/home/impekable'
-)
+MOUNTS=()
 
 #
 # LIBRARIES
 ###################
 require array
 require string
-#require params
-#require actions
 
 #
 # CUSTOM METHODS
@@ -75,7 +51,7 @@ _apply_options () {
   apply_options COMMANDS $*;
 }
 
-add_host () {
+action_add_host () {
   dump_method $*
   echo "Coming soon.";
 }
@@ -100,7 +76,7 @@ action_connect () {
   fi
 }
 
-mount () {
+action_mount () {
   dump_method $*
   for TARGET in "$@"; do
     HOST=$( filter_array HOSTS ${TARGET} )
@@ -120,7 +96,7 @@ mount () {
   done
 }
 
-unmount () {
+action_unmount () {
   dump_method $*
   for TARGET in "$@"; do
     MOUNT=$( filter_array MOUNTS ${TARGET} )
@@ -132,7 +108,7 @@ unmount () {
   done
 }
 
-remount () {
+action_remount () {
   dump_method $*
   unmount $*
   mount $*
@@ -142,19 +118,19 @@ remount () {
 # PARAMETERS
 ###################
 # Anonymity
+param_anonymous ()      { _apply_options "${ANON_HOST}"; }
 usage_anonymous ()      { echo "-a|--anonymous"; }
 describe_anonymous ()   { echo "Support anonymous hosts, ignore host checks."; }
-param_anonymous ()      { _apply_options "${ANON_HOST}"; }
 help_anonymous ()       { echo "More detailed help here."; }
 # Identity
+param_no_key ()         { _apply_options "${NO_KEY}"; }
 usage_no_key ()         { echo "-n|--no-key"; }
 describe_no_key ()      { echo "Disable public key based authentication methods."; }
-param_no_key ()         { _apply_options "${NO_KEY}"; }
 help_no_key ()          { echo "More detailed help here."; }
 # Port
+param_port ()           { _PORT="$1"; }
 usage_port ()           { echo "-p|--port ####"; }
 describe_port ()        { echo "Specify a custom port to use for connections."; }
-param_port ()           { _PORT="$1"; }
 help_port ()            { echo "More detailed help here."; }
 # Overwrite Faking
 param_fake ()           { prepend_options COMMANDS "echo "; }
@@ -165,31 +141,41 @@ param_fake ()           { prepend_options COMMANDS "echo "; }
 # Define a new Host Record
 usage_add_host ()       { echo "a|add|add_host ${_REF_FORMAT}"; }
 describe_add_host ()    { echo "Define a new host record"; }
-action_add_host ()      { add_host $*; }
-help_add_host ()        { echo "More detailed help here."; }
+help_add_host ()        { cat << EOF
+ "More detailed help here.";
+EOF
+}
 # Connect to a target
 usage_connect ()        { echo "c|connect ${_REF_FORMAT}"; }
 describe_connect ()     { echo "Connect to a defined host"; }
-#action_connect ()       { connect $*; }
-help_connect ()         { echo "More detailed help here."; }
+help_connect ()         { cat << EOF
+ "More detailed help here.";
+EOF
+}
 # Mount a target
 usage_mount ()          { echo "m|mount ${_REF_FORMAT}"; }
 describe_mount ()       { echo "Mount a defined host share"; }
-action_mount ()         { mount $*; }
-help_mount ()           { echo "More detailed help here."; }
+help_mount ()           { cat << EOF
+ "More detailed help here.";
+EOF
+}
 # Unmount a target
 usage_unmount ()        { echo "u|unmount ${_REF_FORMAT}"; }
 describe_unmount ()     { echo "Unount a defined host share"; }
-action_unmount ()       { unmount $*; }
-help_unmount ()         { echo "More detailed help here."; }
+help_unmount ()         { cat << EOF
+ "More detailed help here.";
+EOF
+}
 # Remount a target
 usage_remount ()        { echo "r|remount ${_REF_FORMAT}"; }
 describe_remount ()     { echo "Remount a defined host share"; }
-action_remount ()       { remount $*; }
-help_remount ()         { echo "More detailed help here."; }
+help_remount ()         { cat << EOF
+ "More detailed help here.";
+EOF
+}
 
 #
-# LOGIC
+# EXECUTION
 ###################
 require help $*
 run $*

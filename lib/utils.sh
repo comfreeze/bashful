@@ -87,7 +87,7 @@ insert_options () {
     else
       eval "export ${CMD}=\"${!CMD} $*\"";
     fi
-    dump "${CMD}"
+#    dump "${CMD}"
   done
   return 0;
 }
@@ -170,7 +170,7 @@ eval_request () {
         return
       ;;
       *)
-        local t; t=$1; dump t
+        local t; t=$1;
         __WORKING_ARRAY+=( "$1" );
         dump_array_pretty __WORKING_ARRAY
         shift
@@ -197,7 +197,7 @@ eval_param () {
         cmd+=" $1"; shift;
         i=$((${i}-1));
       done
-      ${cmd}; dump cmd
+      ${cmd};
     else
       break
     fi
@@ -221,7 +221,7 @@ eval_action () {
     fi
     shift;
   done
-  dump __WORKING_COMMAND
+#  dump __WORKING_COMMAND
 #  echo "${__WORKING_COMMAND}"
 #  echo $*
   return 0

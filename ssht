@@ -146,7 +146,7 @@ Description:
 EOF
 }
 # Port
-param_port ()           { dump_method $*; _PORT="$2"; }
+param_port ()           { dump_method $*; apply_options COMMANDS "-p $2"; }
 usage_port ()           { echo "-p|--port ####"; }
 describe_port ()        { echo "Specify a custom port to use for connections."; }
 help_port ()            { cat << EOF

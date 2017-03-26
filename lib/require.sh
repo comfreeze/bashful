@@ -52,6 +52,6 @@ run () {
   require help $*
   eval_request $*
   local act;    act="$( get_action )"; shift
-  dump act
+#  dump act
   ${act}
 }

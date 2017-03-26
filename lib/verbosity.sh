@@ -54,7 +54,8 @@ dump () {
 }
 export -f dump
 dump_method () {
-  verbose ${_V_DUMP_METHOD} "${RESET}${!_FG_LABEL}Method:${RESET}${!_FG_VALUE} ${FUNCNAME[1]} $*${RESET}"
+  local c; c=( $( caller 0 ) );
+  verbose ${_V_DUMP_METHOD} "${RESET}${!_FG_LABEL}$( basename ${c[2]} ) [${c[0]}]:${RESET}${!_FG_VALUE} ${FUNCNAME[1]} $*${RESET}"
 }
 export -f dump_method
 dump_array () {

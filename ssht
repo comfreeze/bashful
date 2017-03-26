@@ -58,8 +58,13 @@ action_add_host () {
 
 action_connect () {
   dump_method $*
+  dump SSH
   apply_option SSH "$( verboses )"
-  HOST=$( filter_array HOSTS ${1} ); shift
+  HOST=$( filter_array HOSTS ${1} );
+  if [ -z "${HOST}" ]; then
+    HOST="${1}"
+  fi
+  shift
   if [ ! -z "${HOST}" ]; then
     echo "Connecting to ${HOST}"
     OPTS=( $( explode_array ":" ${HOST} ) )
@@ -118,7 +123,7 @@ action_remount () {
 # PARAMETERS
 ###################
 # Anonymity
-param_anonymous ()      { _apply_options "${ANON_HOST}"; }
+param_anonymous ()      { dump_method $*; apply_options COMMANDS "${ANON_HOST}"; }
 usage_anonymous ()      { echo "-a|--anonymous"; }
 describe_anonymous ()   { echo "Support anonymous hosts, ignore host checks."; }
 help_anonymous ()       { cat << EOF
@@ -131,7 +136,7 @@ Description:
 EOF
 }
 # Identity
-param_no_key ()         { _apply_options "${NO_KEY}"; }
+param_no_key ()         { dump_method $*; apply_options COMMANDS "${NO_KEY}"; }
 usage_no_key ()         { echo "-n|--no-key"; }
 describe_no_key ()      { echo "Disable public key based authentication methods."; }
 help_no_key ()          { cat << EOF
@@ -141,7 +146,7 @@ Description:
 EOF
 }
 # Port
-param_port ()           { _PORT="$1"; }
+param_port ()           { dump_method $*; _PORT="$2"; }
 usage_port ()           { echo "-p|--port ####"; }
 describe_port ()        { echo "Specify a custom port to use for connections."; }
 help_port ()            { cat << EOF
@@ -205,5 +210,4 @@ EOF
 #
 # EXECUTION
 ###################
-require help $*
 run $*

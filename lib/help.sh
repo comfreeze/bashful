@@ -57,16 +57,16 @@ usage_actions() {
 export -f usage_actions
 
 get_usage () {
-  dump_method $*
+#  dump_method $*
   echo "$( get_function_output "${_PREFIX_USAGE}$*" )"
 }
 get_usage_short () {
-  dump_method $*
+#  dump_method $*
   local d; d=( $( get_function_output "${_PREFIX_USAGE}$*" ) )
   echo "${d[0]}"
 }
 get_description () {
-  dump_method $*
+#  dump_method $*
   echo "$( get_function_output "${_PREFIX_DESCRIPTION}$*" )"
 }
 

@@ -4,7 +4,7 @@
 # String utilities
 #
 in_string () {
-  dump_method $*
+#  dump_method $*
   local t;  t=${1};  shift
   local s;  s=${1};  shift
   [[ "${s/${t}}" = "${s}" ]] && echo "false";

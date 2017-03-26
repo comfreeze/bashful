@@ -3,6 +3,7 @@
 #
 # CONFIG
 ###################
+_DEFAULT_COLOR_TOOL="tput"
 
 #
 # MODULE LOGIC
@@ -38,6 +39,26 @@ register_colors_tput () {
   FX_REVERSE=`tput rev`
 }
 export register_colors_tput;
+
+clrev ()        {   echo -n "${FX_REVERSE}";   }
+clbold ()       {   echo -n "${FX_BOLD_ON}";   }
+clreset ()      {   echo -n "${RESET}";        }
+clfred ()       {   echo -n "${FG_RED}";       }
+clbred ()       {   echo -n "${BG_RED}";       }
+clfblue ()      {   echo -n "${FG_BLUE}";      }
+clbblue ()      {   echo -n "${BG_BLUE}";      }
+clfgreen ()     {   echo -n "${FG_GREEN}";     }
+clbgreen ()     {   echo -n "${BG_GREEN}";     }
+clfblack ()     {   echo -n "${FG_BLACK}";     }
+clbblack ()     {   echo -n "${BG_BLACK}";     }
+clfwhite ()     {   echo -n "${FG_WHITE}";     }
+clbwhite ()     {   echo -n "${BG_WHITE}";     }
+clfcyan ()      {   echo -n "${FG_CYAN}";      }
+clbcyan ()      {   echo -n "${BG_CYAN}";      }
+clfyellow ()    {   echo -n "${FG_YELLOW}";    }
+clbyellow ()    {   echo -n "${BG_YELLOW}";    }
+clfmagenta ()   {   echo -n "${FG_MAGENTA}";   }
+clbmagenta ()   {   echo -n "${BG_MAGENTA}";   }
 #
 # Default to load colors on include
 #

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set +a
 shopt -s extglob
 special=$( echo @|tr @ '\034' );
 
@@ -43,11 +44,14 @@ require filesystem
 require config
 
 load_config file "${_SCRIPT_PATH}/${_ENVFILE}"
-
+#
+# Primary execution point
+#
 run () {
   dump_method $*
+  require help $*
   eval_request $*
-  local act;    act="$( get_action )";
+  local act;    act="$( get_action )"; shift
   dump act
   ${act}
 }

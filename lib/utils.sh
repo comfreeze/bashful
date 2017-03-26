@@ -51,9 +51,9 @@ insert_option () {
   local POS;  POS=$1; shift
   local name; name=$1; shift
   if [[ "${POS}" = "0" ]]; then
-    eval "export ${name}=\"$* ${!name}\"";
+    echo "${name}=\"$* ${!name}\"";
   else
-    eval "export ${name}=\"${!name} $*\"";
+    echo "${name}=\"${!name} $*\"";
   fi
   return 0;
 }
@@ -87,7 +87,7 @@ insert_options () {
     else
       eval "export ${CMD}=\"${!CMD} $*\"";
     fi
-#    dump "${CMD}"
+    dump "${CMD}"
   done
   return 0;
 }
@@ -112,7 +112,7 @@ export -f get_functions
 # in the current shell scope.
 #
 is_function () {
-  dump_method $*
+#  dump_method $*
   if [ -n "$(type -t $1)" ] && [ "$(type -t $1)" = function ]; then
     echo "true";
   else
@@ -125,7 +125,7 @@ export -f is_function
 # or echo default (default: "")
 #
 get_function_output () {
-  dump_method $*
+#  dump_method $*
   local f; f=${1-""};
   local d; d=${2-""};
   if [[ "$( is_function "${f}" )" = "true" ]]; then
@@ -162,7 +162,8 @@ eval_request () {
   while test $# -gt 0; do
     case "true" in
       $( in_string "|$1|" "|${p}|" ))
-        set -- $( eval_param $* )
+        eval_param $*
+        set -- ${__WORKING_ARRAY[@]}
       ;;
       $( in_string "|$1|" "|${a}|" ))
         eval_action $*
@@ -170,13 +171,13 @@ eval_request () {
       ;;
       *)
         local t; t=$1; dump t
-        __WORKING_ARRAY+=( $1 );
+        __WORKING_ARRAY+=( "$1" );
         dump_array_pretty __WORKING_ARRAY
         shift
       ;;
     esac
   done
-  echo ${__WORKING_ARRAY[@]}
+  set -- ${__WORKING_ARRAY[@]}
 }
 export -f eval_request
 #
@@ -196,12 +197,12 @@ eval_param () {
         cmd+=" $1"; shift;
         i=$((${i}-1));
       done
-      eval "${cmd}";
+      ${cmd}; dump cmd
     else
       break
     fi
   done
-  echo $*
+  __WORKING_ARRAY=( $@ )
 }
 #
 # Evaluate action
@@ -213,14 +214,17 @@ eval_action () {
   while test $# -gt 0; do
     local t;    t=$( find_target funcs "$1" );
     if [[ ! -z "${t}" ]]; then
-      cmd="action_${t}"; shift;
+      cmd="action_${t}"; shift
       __WORKING_COMMAND="${cmd} $*";
       echo ""
-      return 0
+      break;
     fi
+    shift;
   done
   dump __WORKING_COMMAND
-  echo $*
+#  echo "${__WORKING_COMMAND}"
+#  echo $*
+  return 0
 }
 get_action () {
   dump_method $*
@@ -230,7 +234,7 @@ get_action () {
 # Identify target
 #
 find_target () {
-  dump_method $*
+#  dump_method $*
   local s;      eval "s=( \"\${${1}[@]}\" )";   shift;
   local t;      t=$1;                           shift;
   for i in "${s[@]}"; do

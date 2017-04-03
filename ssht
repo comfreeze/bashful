@@ -42,6 +42,7 @@ MOUNTS=()
 ###################
 require array
 require string
+require input
 
 #
 # CUSTOM METHODS
@@ -51,9 +52,57 @@ _apply_options () {
   apply_options COMMANDS $*;
 }
 
+start_host_record () {
+  local host;       host=$1;
+  cat << EOF
+Host ${host}
+EOF
+}
+
+append_host_record () {
+  local o;      o=$1;
+  local title;
+  case "${o}" in
+    address)      title="Hostname"        ;;
+    port)         title="Port"            ;;
+    username)     title="Username"        ;;
+    identity)     title="IdentityFile"    ;;
+  esac
+  [[ ! -z "${!o}" ]] && cat << EOF
+
+    ${title} ${!o}
+EOF
+}
+
 action_add_host () {
   dump_method $*
-  echo "Coming soon.";
+  local file;       file="~/.ssh/config";
+  local complete;   complete=true;
+  while [[ "${complete}" == "true" ]]; do
+    local record;     record="";
+    local host;                 input_line host "How would you like to call this configuration (ie. alias)?"
+    dump_raw record
+    record="$( start_host_record "${host}" )"
+    local address;              input_line address "What is the address of the host?" && record+=$( append_host_record address )
+    dump_raw record
+    local port=22;              yes_no_return "Set custom port?" && input_line port "What port will this connection use?" && record+=$( append_host_record port )
+    dump_raw record
+    local username="${USER}";   yes_no_return "Set custom username?" && input_line username "What username should be used?" && record+=$( append_host_record username )
+    dump_raw record
+    local identity="";          yes_no_return "Use identity file?" && input_line identity "What identity file should be used?" && record+=$( append_host_record identity )
+    dump_raw record
+    yes_no complete "Add another?"
+  done
+}
+
+action_create_id () {
+  dump_method $*
+  echo "Coming soon."
+}
+
+action_add_id () {
+  dump_method $*
+  echo "Coming soon."
 }
 
 action_connect () {
@@ -168,6 +217,24 @@ help_add_host ()        { cat << EOF
 
 Description:
   $( describe_add_host )  Guided tools for creating ssh config records.
+EOF
+}
+# Create a new identity key
+usage_create_id ()      { echo "ci|create_id ${_REF_FORMAT}"; }
+describe_create_id ()   { echo "Create a new SSH identity"; }
+help_create_id ()       { cat << EOF
+
+Description:
+  $( describe_create_id )  Guided tools for creating ssh identity records.
+EOF
+}
+# Authorize an identity key
+usage_add_id ()         { echo "ai|add_id ${_REF_FORMAT}"; }
+describe_add_id ()      { echo "Add a new identity to the authorized list"; }
+help_add_id ()          { cat << EOF
+
+Description:
+  $( describe_add_id )  Guided tools for adding ssh authorization records.
 EOF
 }
 # Connect to a target

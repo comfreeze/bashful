@@ -27,6 +27,17 @@ verbose() {
   fi
 }
 export -f verbose
+#
+# Verbosity helpers
+#
+verbosee() {
+  local level=$1;   shift;
+  if (( "${_V}" >= "${level}" )); then
+    $( _="$*" dump _ )
+  fi
+  eval "$*"
+}
+export -f verbosee
 verbosef() {
   if (( "${_V}" >= "$1" )); then
     shift; stderrf $*
@@ -53,6 +64,12 @@ dump () {
   fi
 }
 export -f dump
+dump_raw () {
+  if (( "${_V}" >= "${_V_DUMP}" )); then
+    stderr "${RESET}${!_FG_VALUE}${!1}${RESET}"
+  fi
+}
+export -f dump_raw
 dump_method () {
   local c; c=( $( caller 0 ) );
   verbose ${_V_DUMP_METHOD} "${RESET}${!_FG_LABEL}$( basename ${c[2]} ) [${c[0]}]:${RESET}${!_FG_VALUE} ${FUNCNAME[1]} $*${RESET}"
@@ -137,7 +154,7 @@ while test $# -gt 0; do
 done
 set -- ${OPTS[@]}
 (( "${_V}" >= "1" )) && set +ex
-(( "${_V}" >= "3" )) && set -e
+(( "${_V}" >= "3" )) && set +e
 (( "${_V}" >= "5" )) && set -ex
 
 case "$-" in

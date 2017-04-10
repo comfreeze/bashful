@@ -1,4 +1,4 @@
-#BASHFUL
+#BASHFUL v0.1
 
 ##Synopsis
 

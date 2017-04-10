@@ -22,3 +22,13 @@ columns () {
   col <<< "$*"
 }
 export -f columns
+print_numeric_array () {
+  local d; eval "d=( \"\${${1}[@]}\" )"
+  local l; l=${2-"${1}"}
+  verbose 0 "${l}=("
+  for ITEM in "${d[@]}"; do
+    verbosef 0 "\\t%s\\n" "${ITEM}"
+  done
+  verbose 0 ")"
+}
+export -f print_numeric_array

@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 
 #
-# Variables/Options
-#
+# CONFIG
+###################
 declare -a _PP
 declare -a _PV
 declare -a _PT
 declare -a _PD
+__PARAMS_WORKING__=""
 #
-# Require libraries
-#
+# LIBRARIES
+###################
 require array
+
+#
+# MODULE LOGIC
+###################
 #
 # Clear parameters
 #
@@ -22,6 +27,16 @@ clear_params () {
 # Read defined parameters
 #
 config_params () {
+  dump_method $*
+  case $1 in
+    yaml64) shift;  config_params_yaml64 "$*"   ;;
+    yaml)   shift;  config_params_yaml "$*"     ;;
+    *)              config_params_bash "$*"     ;;
+  esac
+}
+export -f config_params
+
+config_params_bash () {
   dump_method $*
   clear_params
   eval "__P=( \"\${${1}[@]}\" )"; shift
@@ -35,7 +50,40 @@ config_params () {
     _PD=( "${_PD[@]}" "${e[3]//_X-X_/ }" );
   done
 }
-export -f config_params
+export -f config_params_bash
+#
+# Base64 decode input before processing
+#
+config_params_yaml64 () {
+  dump_method $*
+  __PARAMS_WORKING__="$( base64_decode ${!1} )";
+  echo "$( config_params_yaml __PARAMS_WORKING__ )"
+}
+#
+# Read a YAML string for params
+#
+config_params_yaml () {
+  dump_method $*
+  local data;       eval "data=\"\${${1}}\""
+  local prefix;     prefix=${2-""}
+  local separator;  separator=${3-"_"}
+  local TEMP_FILE;  TEMP_FILE=$( working_file )
+  echo "${data}" > "${TEMP_FILE}"
+  __PARAMS_WORKING__=( $( parse_yaml "${TEMP_FILE}" "${prefix}" "${separator}" ) )
+  for ITEM in "${__PARAMS_WORKING__[@]}"; do
+    param=$( echo "${ITEM%_*}" );
+    type=$( echo "${ITEM##*_}" | cut -d"=" -f1 );
+    value="${ITEM##*=}";
+    value="${value//%20/ }"
+    case "${type}" in
+      flags)        _PP=( "${_PP[@]}" "${value}" )  ;;
+      type)         _PT=( "${_PT[@]}" "${value}" )  ;;
+      target)       _PM=( "${_PM[@]}" "${value}" )  ;;
+      description)  _PD=( "${_PD[@]}" "${value}" )  ;;
+    esac
+  done
+  rm -rf ${TEMP_FILE}
+}
 #
 # Use defined parameters to set globals
 #
@@ -72,14 +120,6 @@ eval_params () {
   done
 }
 export -f eval_params
-param_count () {
-  dump_method $*
-  local i; i=0
-  while [ "$i" -lt "${#_PP[@]}" ]; do
-    echo -n "${i} "; i=$[$i+1];
-  done
-}
-export -f param_count
 #
 # Parameter parsing
 #

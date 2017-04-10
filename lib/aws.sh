@@ -7,10 +7,10 @@ assemble_aws() {
   set +e
   AWSCMD=$( command -v aws )
   if [ "${_CONFIG_AWSDOCKER}" = true ]; then
-    AWSCMD="docker run -t --env AWS_ACCESS_KEY_ID=${_CONFIG_AWSKEY} --env AWS_SECRET_ACCESS_KEY=${_CONFIG_AWSSEC} impekable/awscli aws"
+    AWSCMD="docker run -t impekable/awscli aws"
   else
     if [[ "${AWSCMD}" != "" ]]; then
-      AWSCMD="${_CONFIG_SHELLCMD} -c AWS_ACCESS_KEY_ID=${_CONFIG_AWSKEY} AWS_SECRET_ACCESS_KEY=${_CONFIG_AWSSEC} ${AWSCMD}"
+      AWSCMD="${_CONFIG_SHELLCMD} -c ${AWSCMD}"
     fi
   fi
   dump 1 AWSCMD
@@ -33,7 +33,7 @@ aws_login() {
     fi
   fi
   LOGIN=`${AWSCMD} --region ${_CONFIG_AWSREG} ecr get-login`
-  eval "${LOGIN//$'\r'/}"
+  echo "${LOGIN//$'\r'/}"
 }
 export -f aws_login
 #

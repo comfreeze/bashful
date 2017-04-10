@@ -1,0 +1,8 @@
+
+# IntelliJ project files
+.idea
+*.iml
+*.swp
+out
+gen
+/test

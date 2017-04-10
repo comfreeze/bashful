@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
 #
+# CONFIG
+###################
+
+#
+# MODULE LOGIC
+###################
+#
 # Shutdown, rebuild and run a custom command for the
 # current ${COMPOSE} command string
 #

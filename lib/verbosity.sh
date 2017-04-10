@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 
+#
+# CONFIG
+###################
+_V_DUMP=1
+_V_DUMP_PRETTY=2
+_V_DUMP_METHOD=4
+_FG_LABEL="FG_CYAN"
+_FG_VALUE="FG_YELLOW"
+
+#
+# LIBRARIES
+###################
 require output
+require colors
+
+#
+# MODULE LOGIC
+###################
 #
 # Verbosity helpers
 #
@@ -9,12 +26,29 @@ verbose() {
     shift; stderr $*
   fi
 }
+export -f verbose
+#
+# Verbosity helpers
+#
+verbosee() {
+  local level=$1;   shift;
+  if (( "${_V}" >= "${level}" )); then
+    $( _="$*" dump _ )
+  fi
+  eval "$*"
+}
+export -f verbosee
 verbosef() {
   if (( "${_V}" >= "$1" )); then
     shift; stderrf $*
   fi
 }
-export -f verbose
+export -f verbosef
+verboses() {
+  local level; level="%${_V}s"
+  (( "${_V}" >= "1" )) && echo -n "-$( printf ${level} | tr " " "v" )"
+}
+export -f verboses
 verb() {
   if (( "${_V}" >= "$1" )); then
     shift; $*
@@ -25,36 +59,70 @@ export -f verb
 # Debugging helpers
 #
 dump () {
-  verbose 2 "\$$1=\"${!1}\""
+  if (( "${_V}" >= "${_V_DUMP}" )); then
+    stderr "${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}\"${!1}\"${RESET}"
+  fi
 }
 export -f dump
+dump_raw () {
+  if (( "${_V}" >= "${_V_DUMP}" )); then
+    stderr "${RESET}${!_FG_VALUE}${!1}${RESET}"
+  fi
+}
+export -f dump_raw
 dump_method () {
-  verbose 4 "Method: ${FUNCNAME[1]} $*"
+  local c; c=( $( caller 0 ) );
+  verbose ${_V_DUMP_METHOD} "${RESET}${!_FG_LABEL}$( basename ${c[2]} ) [${c[0]}]:${RESET}${!_FG_VALUE} ${FUNCNAME[1]} $*${RESET}"
 }
 export -f dump_method
 dump_array () {
-  eval "verbose 2 \"$1=\"\${${1}[@]}\"\""
+  eval "verbose 2 \"${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}\"\${${1}[@]}\"\"${RESET}"
 }
 export -f dump_array
 dump_array_pretty () {
   eval "target=( \"\${${1}[@]}\" )"
-  verbose 1 "$1=("
+  local l; l=${2-"${1}"}
+  verbose ${_V_DUMP_PRETTY} "${RESET}${!_FG_LABEL}${l}=${RESET}${!_FG_VALUE}("
   for ITEM in "${target[@]}"; do
-    verbosef 1 '\t%s\n' "${ITEM}"
+    verbosef ${_V_DUMP_PRETTY} "\\t%s\\n" "${ITEM}"
   done
-  verbose 1 ')'
+  verbose ${_V_DUMP_PRETTY} ")${RESET}"
 }
 export -f dump_array_pretty
 dump_assoc_array () {
   eval "target=( \"\${${1}[@]}\" )"
-  verbose 1 "$1=("
+  verbose ${_V_DUMP_PRETTY} "${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}("
   for ITEM in "${target[@]}"; do
     KEY="${ITEM%%=*}"; VALUE="${ITEM##*=}";
-    verbose 1 "${KEY}"
+    verbose ${_V_DUMP_PRETTY} "${KEY}"
   done
-  verbose 1 ")"
+  verbose ${_V_DUMP_PRETTY} ")${RESET}"
 }
 export -f dump_assoc_array
+
+#
+# PARAMETERS
+###################
+usage_verbosity ()      { echo "-v|-vv|-vvv|-vvvv|-vvvvv|-vvvvvv"; }
+describe_verbosity ()   { echo "Support various verbosity level specification."; }
+param_verbosity ()      { _V="$( grep -o "v" <<< "$1" | wc -l )"; } #echo "Verbosity: ${_V}"; }
+help_verbosity ()       { cat << EOF
+
+Description:
+  $( describe_verbosity )  Manages the level of debugging output provided, higher values provide a lot of output.
+EOF
+}
+
+usage_fake ()           { echo "-f|--fake"; }
+describe_fake ()        { echo "Replace commands with echo equivalents to output what would be run."; }
+param_fake ()           { _FAKE=true; }
+help_fake ()            { cat << EOF
+
+Description:
+  $( describe_fake )  Signals to the system that instead of executing calls, each call should be printed instead.
+EOF
+}
+
 #
 # Verbosity parameter parsing and to-level config
 # setters as well as access to help immediately so
@@ -63,31 +131,32 @@ export -f dump_assoc_array
 while test $# -gt 0; do
   case "$1" in
     -v*)
-      _V=$(grep -o "v" <<< "$1" | wc -l)
-      echo "Verbosity: ${_V}"
+      param_verbosity "$1"
+#      echo "Verbosity: ${_V}"
       shift
     ;;
-    -f|--fake)
-      shift
-      echo "Faking commands"
-      _FAKE=true
-    ;;
-    -e|--env)
-      shift
-      _ENVFILE="$1"
-      dump 1 _ENVFILE
-      shift
-    ;;
+#    -f|--fake)
+#      shift
+#      echo "Faking commands"
+#      _FAKE=true
+#    ;;
+#    -e|--env)
+#      shift
+#      _ENVFILE="$1"
+#      dump 1 _ENVFILE
+#      shift
+#    ;;
     *)
-      OPTS=( "${OPTS[@]}" $1 )
+      OPTS+=( $1 )
       shift
     ;;
   esac
 done
 set -- ${OPTS[@]}
 (( "${_V}" >= "1" )) && set +ex
-(( "${_V}" >= "3" )) && set -e
+(( "${_V}" >= "3" )) && set +e
 (( "${_V}" >= "5" )) && set -ex
+
 case "$-" in
     *i*)    _INTERACTIVE=true ;;
 esac

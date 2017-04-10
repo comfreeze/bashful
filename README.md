@@ -18,7 +18,7 @@ The base directory contains elements that demonstrate existing integrations of t
 
 Primary entry point:
 ```
-source $( dirname -- "$0" )/lib/require.sh $*
+source $( dirname -- "$0" )/require.sh $*
 ```
 This code assumes the script called is in the parent directory to the require collection.  This can be changed, but is
  convenient for local relativity out-of-the-box.
@@ -62,7 +62,7 @@ Include the basic require include logic:
 #
 # USE REQUIRE
 ###################
-source $( dirname -- "$0" )/lib/require.sh $*
+source $( dirname -- "$0" )/require.sh $*
 ```
 
 NOTE: the `$*` ensure the current script passes all it's parameters into the require framework.  This allows the require framework to work on parameters behind the scenes.  It can also be used to customize how require sees it's operating environment by manually injecting or controlling values in this set.

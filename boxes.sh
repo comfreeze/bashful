@@ -3,6 +3,7 @@
 #
 # LIBRARIES
 ###################
+require string
 require lines
 require colors
 

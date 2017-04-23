@@ -3,6 +3,7 @@
 #
 # LIBRARIES
 ###################
+require display
 require string
 require lines
 require colors
@@ -10,6 +11,8 @@ require colors
 #
 # CONFIG
 ###################
+SPACE=' '
+SPACER=''
 THEME_1ST=$(echo -e "${FG_GRN}")
 THEME_2ND=$(echo -e "${FG_WHT}")
 THEME_3RD=$(echo -e "${FG_BLU}")
@@ -17,6 +20,7 @@ THEME_4TH=$(echo -e "${FG_CYN}")
 THEME_WRN=$(echo -e "${FG_YLW}")
 THEME_ERR=$(echo -e "${FG_RED}")
 THEME_SPACER=$(printf "%b" ${UR_DR})
+THEME_BOX_DEFAULT_WIDTH=$( display_width )
 ## Box Types
 BOX_START='top';
 BOX_LINE='line';
@@ -29,6 +33,7 @@ BOX_FINISH='bottom';
 ## Box Helpers
 ### Boundary
 function box_boundary() {
+  dump_method $*
     local TITLE;            TITLE=${1-"Untitled"};
     local POSITION;         POSITION=${2};
     local ALIGNMENT;        ALIGNMENT=${3};
@@ -77,37 +82,48 @@ function box_boundary() {
 export -f box_boundary
 ### Title() {
 function box_title() {
+  dump_method $*
     local TITLE;         TITLE=${1-"Untitled"}
     printf "%b\u2002%s\u2002%b" ${LR_RT} ${TITLE} ${LT_RR}
 }
 export -f box_title
 ### Start
 function box_start() {
-    box_boundary $1 ${BOX_START} ${2-${ALIGN_LEFT}} ${3-${THEME_BOX_DEFAULT_WIDTH}}
-    SPACER="${SPACER}${THEME_SPACER}"
+  dump_method $*
+  local title;  title=${1-"${SPACE}"};                      shift
+  local align;  align=${1-"${ALIGN_LEFT}"};                 shift
+  local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
+  box_boundary "${title}" "${BOX_START}" "${align}" "${width}"
+  SPACER="${SPACER}${THEME_SPACER}"
 }
 export -f box_start
 ### End
 function box_end() {
-    local SPACER_LENGTH;        SPACER_LENGTH=$(real_length "${SPACER}")
-    local THEME_SPACER_LENGTH;  THEME_SPACER_LENGTH=$(real_length "${THEME_SPACER}");
-    local t;                    t=$(expr ${SPACER_LENGTH} - ${THEME_SPACER_LENGTH});
-#    echo "${SPACER_LENGTH} - ${THEME_SPACE_LENGTH} - ${t}"
-    SPACER="${SPACER:0:${t}}"
-    box_boundary "$1" ${BOX_FINISH} ${2-${ALIGN_RIGHT}} ${3-${THEME_BOX_DEFAULT_WIDTH}}
+  dump_method $*
+  local title;  title=${1-"${SPACE}"};                      shift
+  local align;  align=${1-"${ALIGN_LEFT}"};                 shift
+  local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
+  local SPACER_LENGTH;        SPACER_LENGTH=$(real_length "${SPACER}")
+  local THEME_SPACER_LENGTH;  THEME_SPACER_LENGTH=$(real_length "${THEME_SPACER}");
+  local t;                    t=$(expr ${SPACER_LENGTH} - ${THEME_SPACER_LENGTH});
+  SPACER="${SPACER:0:${t}}"
+  box_boundary "${title}" "${BOX_FINISH}" "${align}" "${width}"
 }
 export -f box_end
 ### Content
 function box_line() {
+  dump_method $*
     box_boundary "$1" ${BOX_LINE} ${2-${ALIGN_LEFT}} ${3-${THEME_BOX_DEFAULT_WIDTH}} "\u2002"
 }
 export -f box_line
 function box_misc() {
+  dump_method $*
     box_boundary "$1" ${BOX_MISC} ${2-${ALIGN_LEFT}} ${3-${THEME_BOX_DEFAULT_WIDTH}}
 }
 export -f box_misc
 ## Calculations
 function real_length() {
+  dump_method $*
     local LENGTH1; LENGTH1=$(echo "$1" | awk '{ print length }')
     local LENGTH2; LENGTH2=$(echo "${#1}")
     local LENGTH3; LENGTH3=$(expr length "${1}")

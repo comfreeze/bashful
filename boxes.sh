@@ -7,6 +7,7 @@ require display
 require string
 require lines
 require colors
+require string
 
 #
 # CONFIG
@@ -80,6 +81,21 @@ function box_boundary() {
     echo
 }
 export -f box_boundary
+function box_spacer_add () {
+  dump_method $*
+  local s;  s=${1-"${THEME_SPACER}"}; shift
+  SPACER="${SPACER}${s}"
+}
+export -f box_spacer_add
+function box_spacer_remove () {
+  dump_method $*
+  local s;  s=${1-"${THEME_SPACER}"}; shift
+  local SPACER_LENGTH;        SPACER_LENGTH=$(real_length "${SPACER}")
+  local THEME_SPACER_LENGTH;  THEME_SPACER_LENGTH=$(real_length "${s}");
+  local t;  t=$(expr ${SPACER_LENGTH} - ${s});
+  SPACER="${SPACER:0:${t}}"
+}
+export -f box_spacer_remove
 ### Title() {
 function box_title() {
   dump_method $*
@@ -94,7 +110,7 @@ function box_start() {
   local align;  align=${1-"${ALIGN_LEFT}"};                 shift
   local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
   box_boundary "${title}" "${BOX_START}" "${align}" "${width}"
-  SPACER="${SPACER}${THEME_SPACER}"
+  box_spacer_add
 }
 export -f box_start
 ### End
@@ -103,37 +119,25 @@ function box_end() {
   local title;  title=${1-"${SPACE}"};                      shift
   local align;  align=${1-"${ALIGN_LEFT}"};                 shift
   local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
-  local SPACER_LENGTH;        SPACER_LENGTH=$(real_length "${SPACER}")
-  local THEME_SPACER_LENGTH;  THEME_SPACER_LENGTH=$(real_length "${THEME_SPACER}");
-  local t;                    t=$(expr ${SPACER_LENGTH} - ${THEME_SPACER_LENGTH});
-  SPACER="${SPACER:0:${t}}"
+  box_spacer_remove
   box_boundary "${title}" "${BOX_FINISH}" "${align}" "${width}"
 }
 export -f box_end
 ### Content
 function box_line() {
   dump_method $*
-    box_boundary "$1" ${BOX_LINE} ${2-${ALIGN_LEFT}} ${3-${THEME_BOX_DEFAULT_WIDTH}} "\u2002"
+  local title;  title=${1-"${SPACE}"};                      shift
+  local align;  align=${1-"${ALIGN_LEFT}"};                 shift
+  local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
+  box_boundary "${title}" "${BOX_LINE}" "${align}" "${width}" "\u2002"
 }
 export -f box_line
 function box_misc() {
   dump_method $*
-    box_boundary "$1" ${BOX_MISC} ${2-${ALIGN_LEFT}} ${3-${THEME_BOX_DEFAULT_WIDTH}}
+  local title;  title=${1-"${SPACE}"};                      shift
+  local align;  align=${1-"${ALIGN_LEFT}"};                 shift
+  local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
+  box_boundary "${title}" "${BOX_MISC}" "${align}" "${width}"
 }
 export -f box_misc
 ## Calculations
-function real_length() {
-  dump_method $*
-    local LENGTH1; LENGTH1=$(echo "$1" | awk '{ print length }')
-    local LENGTH2; LENGTH2=$(echo "${#1}")
-    local LENGTH3; LENGTH3=$(expr length "${1}")
-    # echo "$LENGTH1 - $LENGTH2 - $LENGTH3"
-    if [ "$LENGTH1" -le "$LENGTH2" ] && [ "$LENGTH1" -le "$LENGTH3" ]; then
-        echo "$LENGTH1";
-    elif [ "$LENGTH2" -le "$LENGTH1" ] && [ "$LENGTH2" -le "$LENGTH3" ]; then
-        echo "$LENGTH2";
-    else
-        echo "$LENGTH3";
-    fi
-}
-export -f real_length

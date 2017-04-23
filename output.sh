@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
 #
-# Error message output
+# CONFIG
+###################
+
 #
-stderr() {
+# MODULE LOGIC
+###################
+# Error message output
+stderr () {
   >&2 printf '%b\n' "$*"
 }
 export -f stderr
-stderrf() {
+stderrf () {
   local fmt; fmt=$1; shift
   >&2 printf ${fmt} "$*"
 }
@@ -18,6 +23,10 @@ error () {
   exit $code
 }
 export -f error
+bell () {
+  tput bel
+}
+export -f bell
 columns () {
   col <<< "$*"
 }

@@ -1,22 +1,30 @@
 #!/usr/bin/env bash
 
 #
-# CONFIG
-###################
-
-#
 # LIBRARIES
 ###################
 require lines
+require colors
+
+#
+# CONFIG
+###################
+THEME_1ST=$(echo -e "${FG_GRN}")
+THEME_2ND=$(echo -e "${FG_WHT}")
+THEME_3RD=$(echo -e "${FG_BLU}")
+THEME_4TH=$(echo -e "${FG_CYN}")
+THEME_WRN=$(echo -e "${FG_YLW}")
+THEME_ERR=$(echo -e "${FG_RED}")
+THEME_SPACER=$(printf "%b" ${UR_DR})
+## Box Types
+BOX_START='top';
+BOX_LINE='line';
+BOX_MISC='misc';
+BOX_FINISH='bottom';
 
 #
 # MODULE LOGIC
 ###################
-## Box Types
-export BOX_START='top';
-export BOX_LINE='line';
-export BOX_MISC='misc';
-export BOX_FINISH='bottom';
 ## Box Helpers
 ### Boundary
 function box_boundary() {

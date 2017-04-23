@@ -28,7 +28,7 @@ _PREFIX_DESCRIPTION="describe_"
 #
 require () {
   (( "${_V}" >= "5" )) && echo "lib: ${1}"
-  TARGET=${1}${_EXTENSION}; shift
+  TARGET="${1}${_EXTENSION}"; shift
   REQ="${_LIB_DIR}/${TARGET}";
   if [[ -f "${REQ}" ]]; then
     source "${REQ}" $@

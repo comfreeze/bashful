@@ -34,11 +34,11 @@ BOX_FINISH='bottom';
 ### Boundary
 function box_boundary() {
   dump_method $*
-    local TITLE;            TITLE=${1-"Untitled"};
-    local POSITION;         POSITION=${2};
-    local ALIGNMENT;        ALIGNMENT=${3};
-    local WIDTH;            WIDTH=${4};
-    local PAD_CHAR;         PAD_CHAR=${5-${LR_RR}};
+    local TITLE;            TITLE="${1-"Untitled"}";
+    local POSITION;         POSITION="${2}";
+    local ALIGNMENT;        ALIGNMENT="${3}";
+    local WIDTH;            WIDTH="${4}";
+    local PAD_CHAR;         PAD_CHAR="${5-${LR_RR}}";
     local TITLE_LENGTH;     TITLE_LENGTH=$(real_length "${TITLE}");
     local SPACER_LENGTH;    SPACER_LENGTH=$(real_length "${SPACER}")
     local FULL_LENGTH;      FULL_LENGTH=$(expr ${TITLE_LENGTH} + ${SPACER_LENGTH} + ${SPACER_LENGTH} + 2);

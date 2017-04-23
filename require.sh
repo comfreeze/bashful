@@ -32,11 +32,10 @@ require () {
   REQ="${_LIB_DIR}/${TARGET}";
   if [[ -f "${REQ}" ]]; then
     source "${REQ}" $@
-  else
-    REQ="${_SCRIPT_PATH}/${TARGET}"; shift
-    if [[ -f "${REQ}" ]]; then
-      source "${REQ}" $@
-    fi
+  fi
+  REQ="${_SCRIPT_PATH}/${TARGET}"; shift
+  if [[ -f "${REQ}" ]]; then
+    source "${REQ}" $@
   fi
 }
 export -f require

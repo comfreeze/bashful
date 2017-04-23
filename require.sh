@@ -28,9 +28,15 @@ _PREFIX_DESCRIPTION="describe_"
 #
 require () {
   (( "${_V}" >= "5" )) && echo "lib: ${1}"
-  REQ="${_LIB_DIR}/${1}${_EXTENSION}"; shift
-  if [[ -f "${_SCRIPT_PATH}/${REQ}" ]]; then
-    source "${_SCRIPT_PATH}/${REQ}" $@
+  TARGET=${1}${_EXTENSION}; shift
+  REQ="${_LIB_DIR}/${TARGET}";
+  if [[ -f "${REQ}" ]]; then
+    source "${REQ}" $@
+  else
+    REQ="${_SCRIPT_PATH}/${TARGET}"; shift
+    if [[ -f "${REQ}" ]]; then
+      source "${REQ}" $@
+    fi
   fi
 }
 export -f require

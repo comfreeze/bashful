@@ -12,20 +12,23 @@ require yaml
 # Generating a temporary working file
 #
 working_file () {
-  echo $( mktemp "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX" )
+  dump_method $*
+  echo $( mktemp "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX" )
 }
 export -f working_file
 #
 # Generating a temporary working directory
 #
 working_directory () {
-  echo $( mktemp -d "${TMPDIR:-/tmp/}$(basename 0).XXXXXXXXXXXX" )
+  dump_method $*
+  echo $( mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX" )
 }
 export -f working_directory
 #
 # Process a list of files and append to array
 #
 get_files () {
+  dump_method $*
   local files;  files=();
   local filter; filter=$1;    shift;
   local ext;    ext=$1;       shift;
@@ -44,6 +47,7 @@ export -f get_files
 # of target directories
 #
 multidir () {
+  dump_method $*
   local action; local target;
   action=$1;    shift
   for target in "$@"; do
@@ -54,6 +58,7 @@ multidir () {
 export -f multidir
 
 read_file () {
+  dump_method $*
   dump_method $*
   local filename;   filename=$1;    shift
   local start;      start=$1;       shift
@@ -69,6 +74,7 @@ export -f read_file
 
 ## General Tools
 function getrev() {
+  dump_method $*
     local RESULT;
     RESULT=$(echo ${1} | cut -d${2} -f${3-1})
     echo ${RESULT}
@@ -76,6 +82,7 @@ function getrev() {
 export -f getrev;
 ## Grab the last string after /
 function getdirname() {
+  dump_method $*
     local TARGET;   TARGET=$1;
     local RESULT;
     RESULT=$(echo "${TARGET}" | cut -d \/ -f $(expr 1 + $(grep -o "/" <<< "${TARGET}" | wc -l)))
@@ -84,12 +91,14 @@ function getdirname() {
 export -f getdirname;
 ## Download remote file
 function getfile() {
+  dump_method $*
     local TARGET;   TARGET="$1"
     wget -q -N "${TARGET}"
 }
 export -f getfile;
 ## Mirror a remote directory
 function getremotedir() {
+  dump_method $*
     local TARGET;   TARGET="$1"
     local EXCLUDES; EXCLUDES="$2"
     local ex;
@@ -102,6 +111,7 @@ export -f getremotedir;
 ## Output Tools
 ## Create or change to directory
 function check_directory() {
+  dump_method $*
     local ROOT;   ROOT="$1"
     local TARGET; TARGET="$2"
     local DIR;    DIR=$(getdirname ${ROOT})
@@ -119,6 +129,7 @@ function check_directory() {
 export -f check_directory;
 ## Manipulation Helpers
 function find_replace() {
+  dump_method $*
     local TARGET;       TARGET=$1;
     local REPLACEMENT;  REPLACEMENT=$2;
     find . -type f -exec sed -i -e "s/${TARGET//\//\\\/}/${REPLACEMENT//\//\\\/}/g" {} \;

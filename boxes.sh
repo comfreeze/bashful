@@ -92,7 +92,7 @@ function box_spacer_remove () {
   local s;  s=${1-"${THEME_SPACER}"}; shift
   local SPACER_LENGTH;        SPACER_LENGTH=$(real_length "${SPACER}")
   local THEME_SPACER_LENGTH;  THEME_SPACER_LENGTH=$(real_length "${s}");
-  local t;  t=$(expr ${SPACER_LENGTH} - ${s});
+  local t;  t=$(expr ${SPACER_LENGTH} - ${THEME_SPACER_LENGTH});
   SPACER="${SPACER:0:${t}}"
 }
 export -f box_spacer_remove

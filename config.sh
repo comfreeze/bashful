@@ -37,6 +37,7 @@ load_config () {
     file)   shift;  load_config_file "$*"     ;;
     yaml64) shift;  load_config_yaml64 "$*"   ;;
     yaml)   shift;  load_config_yaml "$*"     ;;
+    ini)    shift;  load_config_ini "$*"      ;;
     *)              load_config_bash "$*"     ;;
   esac
 }
@@ -109,6 +110,22 @@ load_config_yaml () {
 #      target)       _CV=( "${_CV[@]}" "${value}" )  ;;
 #      description)  eval "${ITEM}"                  ;;
 #    esac
+  done
+  rm -rf ${TEMP_FILE}
+}
+#
+# Read an INI string for configs
+#
+load_config_ini () {
+  dump_method $*
+  local data;       eval "data=\"\${${1}}\""
+  local prefix;     prefix=${2-""}
+  local separator;  separator=${3-"_"}
+  local TEMP_FILE;  TEMP_FILE=$( working_file )
+  echo "${data}" > "${TEMP_FILE}"
+  __CONFIG_WORKING__=( $( parse_yaml "${TEMP_FILE}" "${prefix}" "${separator}" ) )
+  for ITEM in "${__CONFIG_WORKING__[@]}"; do
+    echo "${ITEM}"
   done
   rm -rf ${TEMP_FILE}
 }

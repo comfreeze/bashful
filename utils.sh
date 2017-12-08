@@ -216,7 +216,6 @@ eval_action () {
     if [[ ! -z "${t}" ]]; then
       cmd="action_${t}"; shift
       __WORKING_COMMAND="${cmd} $*";
-      echo ""
       break;
     fi
     shift;

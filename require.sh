@@ -26,7 +26,8 @@ _PREFIX_DESCRIPTION="describe_"
 #
 # Define our base require logic helper
 #
-require () {
+function require ()
+{
   (( "${_V}" >= "5" )) && echo "lib: ${1}"
   TARGET="${1}${_EXTENSION}"; shift
   REQ="${_LIB_DIR}/${TARGET}";
@@ -52,11 +53,30 @@ load_config file "${_SCRIPT_PATH}/${_ENVFILE}"
 #
 # Primary execution point
 #
-run () {
+function run ()
+{
   dump_method $*
   require help $*
   eval_request $*
   local act;    act="$( get_action )"; shift
 #  dump act
   ${act}
+  reset_colors
+}
+export -f run
+#
+# Support library locator
+#
+function bashful_root ()
+{
+  dump_method $*
+  echo "${_LIB_DIR}"
+}
+#
+# Script root locator
+#
+function script_root ()
+{
+  dump_method $*
+  echo "${_SCRIPT_PATH}"
 }

@@ -87,7 +87,7 @@ Most scripts will have various option flags available to them, and adding them o
 # PARAMETERS
 ###################
 # Anonymity
-param_anonymous ()      { dump_method $*; apply_options COMMANDS "${ANON_HOST}"; }
+param_anonymous ()      { dump_method "$@"; apply_options COMMANDS "${ANON_HOST}"; }
 usage_anonymous ()      { echo "-a|--anonymous"; }
 describe_anonymous ()   { echo "Support anonymous hosts, ignore host checks."; }
 help_anonymous ()       { cat << EOF
@@ -168,9 +168,9 @@ When analyzing a script, it's often useful to trace the logical structure, often
 
 ```
 my_method() {
-  dump_method $*
+  dump_method "$@"
   echo "this is stuff stuff"
-  dump_method $*
+  dump_method "$@"
 }
 ```
 

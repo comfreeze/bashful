@@ -31,7 +31,7 @@ export -f parse_ini
 # Save local variables into YAML
 #
 save_ini () {
-  dump_method $*
+  dump_method "$@"
 
 }
 export -f save_ini

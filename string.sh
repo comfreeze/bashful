@@ -14,7 +14,7 @@
 # Test if char sequence in string
 function in_string ()
 {
-#  dump_method $*
+#  dump_method "$@"
   local t;  t=${1};  shift
   local s;  s=${1};  shift
   [[ "${s/${t}}" = "${s}" ]] && echo "false";
@@ -24,7 +24,7 @@ export -f in_string
 # Calculate length without special chars
 function real_length ()
 {
-  dump_method $*
+  dump_method "$@"
   local LENGTH1; LENGTH1=$(echo "$1" | awk '{ print length }')
   local LENGTH2; LENGTH2=$(echo "${#1}")
   local LENGTH3; LENGTH3=$(expr length "${1}")

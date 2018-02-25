@@ -4,7 +4,7 @@
 # Array utilities
 #
 filter_array () {
-  dump_method $*
+  dump_method "$@"
   eval source=\( \"\${${1}[@]}\" \)
   shift
   selection=( $@ )
@@ -22,14 +22,15 @@ export -f filter_array
 # CSV to array
 #
 csv_array () {
-  dump_method $*
+  dump_method "$@"
   echo $( explode_array "," $* )
 }
+export -f csv_array
 #
 # Delimiter to array
 #
 explode_array () {
-  dump_method $*
+  dump_method "$@"
   local delim; delim=$1; shift
   IFS="${delim}" read -a OUT <<< "$*"
   verb 5 dump_array_pretty OUT
@@ -37,12 +38,12 @@ explode_array () {
     printf '%s' "${I} "
   done
 }
-export -f csv_array
+export -f explode_array
 #
 # Extract specific row
 #
 extract_row () {
-  dump_method $*
+  dump_method "$@"
   eval "target=( \"\${${1}[@]}\" )"; shift
   filter=$2; shift; len=${#filter};
   for T in "${TARGET[@]}"; do

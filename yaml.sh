@@ -13,7 +13,7 @@ _YAML_OUT_SEPARATOR="_"
 # Read YAML into local variables
 #
 parse_yaml () {
-  dump_method $*
+  dump_method "$@"
   local source; local prefix; local separator;
   source="$1"; shift
   prefix=${1-"${_YAML_OUT_PREFIX}"}; shift
@@ -46,7 +46,7 @@ export -f parse_yaml
 # Save local variables into YAML
 #
 save_yaml () {
-  dump_method $*
+  dump_method "$@"
 
 }
 export -f save_yaml

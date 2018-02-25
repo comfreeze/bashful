@@ -23,7 +23,7 @@ DOWNLOADER=
 #
 function downloader ()
 {
-    dump_method $*
+    dump_method "$@"
     CMD=`which curl`
     if [[ ! ${CMD} = "" ]]; then
         echo "${CMD} ${__CURL_PARAMS} "

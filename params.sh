@@ -20,7 +20,7 @@ require array
 # Clear parameters
 #
 clear_params () {
-  dump_method $*
+  dump_method "$@"
   unset _PP; unset _PV; unset _PT; unset _PD;
 }
 #
@@ -28,7 +28,7 @@ clear_params () {
 #
 config_params ()
 {
-  dump_method $*
+  dump_method "$@"
   case $1 in
     yaml64) shift;  config_params_yaml64 "$*"   ;;
     yaml)   shift;  config_params_yaml "$*"     ;;
@@ -39,7 +39,7 @@ export -f config_params
 
 config_params_bash ()
 {
-  dump_method $*
+  dump_method "$@"
   clear_params
   eval "__P=( \"\${${1}[@]}\" )"; shift
 #  dump_array __P
@@ -58,7 +58,7 @@ export -f config_params_bash
 #
 config_params_yaml64 ()
 {
-  dump_method $*
+  dump_method "$@"
   __PARAMS_WORKING__="$( base64_decode ${!1} )";
   echo "$( config_params_yaml __PARAMS_WORKING__ )"
 }
@@ -67,7 +67,7 @@ config_params_yaml64 ()
 #
 config_params_yaml ()
 {
-  dump_method $*
+  dump_method "$@"
   local data;       eval "data=\"\${${1}}\""
   local prefix;     prefix=${2-""}
   local separator;  separator=${3-"_"}
@@ -93,7 +93,7 @@ config_params_yaml ()
 #
 eval_params ()
 {
-  dump_method $*
+  dump_method "$@"
   local test; local var; local type; local pt;
   for up in $*; do
     for pi in $( bashful_param_count ); do

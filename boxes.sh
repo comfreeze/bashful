@@ -34,7 +34,7 @@ BOX_FINISH='bottom';
 ## Box Helpers
 ### Boundary
 function box_boundary() {
-  dump_method $*
+  dump_method "$@"
     local TITLE;            TITLE="${1-"Untitled"}";
     local POSITION;         POSITION="${2}";
     local ALIGNMENT;        ALIGNMENT="${3}";
@@ -82,13 +82,13 @@ function box_boundary() {
 }
 export -f box_boundary
 function box_spacer_add () {
-  dump_method $*
+  dump_method "$@"
   local s;  s=${1-"${THEME_SPACER}"}; shift
   SPACER="${SPACER}${s}"
 }
 export -f box_spacer_add
 function box_spacer_remove () {
-  dump_method $*
+  dump_method "$@"
   local s;  s=${1-"${THEME_SPACER}"}; shift
   local SPACER_LENGTH;        SPACER_LENGTH=$(real_length "${SPACER}")
   local THEME_SPACER_LENGTH;  THEME_SPACER_LENGTH=$(real_length "${s}");
@@ -98,14 +98,14 @@ function box_spacer_remove () {
 export -f box_spacer_remove
 ### Title() {
 function box_title() {
-  dump_method $*
+  dump_method "$@"
     local TITLE;         TITLE=${1-"Untitled"}
     printf "%b\u2002%s\u2002%b" ${LR_RT} ${TITLE} ${LT_RR}
 }
 export -f box_title
 ### Start
 function box_start() {
-  dump_method $*
+  dump_method "$@"
   local title;  title=${1-"${SPACE}"};                      shift
   local align;  align=${1-"${ALIGN_LEFT}"};                 shift
   local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
@@ -115,7 +115,7 @@ function box_start() {
 export -f box_start
 ### End
 function box_end() {
-  dump_method $*
+  dump_method "$@"
   local title;  title=${1-"${SPACE}"};                      shift
   local align;  align=${1-"${ALIGN_LEFT}"};                 shift
   local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
@@ -125,7 +125,7 @@ function box_end() {
 export -f box_end
 ### Content
 function box_line() {
-  dump_method $*
+  dump_method "$@"
   local title;  title=${1-"${SPACE}"};                      shift
   local align;  align=${1-"${ALIGN_LEFT}"};                 shift
   local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift
@@ -133,7 +133,7 @@ function box_line() {
 }
 export -f box_line
 function box_misc() {
-  dump_method $*
+  dump_method "$@"
   local title;  title=${1-"${SPACE}"};                      shift
   local align;  align=${1-"${ALIGN_LEFT}"};                 shift
   local width;  width=${1-"${THEME_BOX_DEFAULT_WIDTH}"};    shift

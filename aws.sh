@@ -32,7 +32,7 @@ aws_login() {
       error "Unable to locate valid AWS CLI."
     fi
   fi
-  LOGIN=`${AWSCMD} --region ${_CONFIG_AWSREG} ecr get-login`
+  LOGIN=`${AWSCMD} --region ${_CONFIG_AWSREG} ecr get-login --no-include-email`
   echo "${LOGIN//$'\r'/}"
 }
 export -f aws_login

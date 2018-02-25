@@ -12,7 +12,7 @@ __H=${_DISPLAY_HEIGHT}
 # MODULE LOGIC
 ###################
 display_get_size () {
-  dump_method $*
+  dump_method "$@"
   _DISPLAY_WIDTH=$( tput cols )
   _DISPLAY_HEIGHT=$( tput lines )
   __W=${_DISPLAY_WIDTH}
@@ -20,13 +20,13 @@ display_get_size () {
 }
 export -f display_get_size
 display_width () {
-  dump_method $*
+  dump_method "$@"
   display_get_size
   echo "${__W}"; return ${__W}
 }
 export -f display_width
 display_height () {
-  dump_method $*
+  dump_method "$@"
   display_get_size
   echo "${__H}"; return ${__H}
 }

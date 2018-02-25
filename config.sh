@@ -21,20 +21,32 @@ require array
 # MODULE LOGIC
 ###################
 #
+# Support library locator
+#
+function bashful_root ()
+{
+  echo "${_LIB_DIR}"
+}
+#
+# Script root locator
+#
+function script_root ()
+{
+  echo "${_SCRIPT_PATH}"
+}
+#
 # Clear config
 #
-clear_configs ()
-{
-  dump_method $*
+clear_configs () {
+  dump_method "$@"
   unset _CONFIG:    unset __CONFIG_WORKING__;
   unset _CP;    unset _CV;  unset _CT;  unset _CD;
 }
 #
 # Read defined config
 #
-load_config ()
-{
-  dump_method $*
+load_config () {
+  dump_method "$@"
   case $1 in
     file)   shift;  load_config_file "$*"     ;;
     yaml64) shift;  load_config_yaml64 "$*"   ;;
@@ -45,8 +57,7 @@ load_config ()
 }
 export -f load_config
 
-save_local()
-{
+save_local() {
   [[ ! -f "${_ENVFILE}" ]] && echo "#!/usr/bin/env bash" > "${_ENVFILE}"
   echo "Do you wish to save this to ${_ENVFILE}? [Y/n]:"; read choice
   case "${choice}" in
@@ -60,17 +71,15 @@ export -f save_local
 #
 # Configuration source loader
 #
-load_config_file ()
-{
+load_config_file () {
   if [ -f "$1" ]; then
     verbose 3 "Loading configuration file: ${1}"
     source "$1"
   fi
 }
 export -f load_config_file
-load_config_bash ()
-{
-  dump_method $*
+load_config_bash () {
+  dump_method "$@"
   clear_configs
   eval "__C=( \"\${${1}[@]}\" )"; shift
   local e;
@@ -86,18 +95,16 @@ export -f load_config_bash
 #
 # Base64 decode input before processing
 #
-load_config_yaml64 ()
-{
-  dump_method $*
+load_config_yaml64 () {
+  dump_method "$@"
   __CONFIG_WORKING__="$( base64_decode ${!1} )";
   echo "$( load_config_yaml __CONFIG_WORKING__ )"
 }
 #
 # Read a YAML string for configs
 #
-load_config_yaml ()
-{
-  dump_method $*
+load_config_yaml () {
+  dump_method "$@"
   local data;       eval "data=\"\${${1}}\""
   local prefix;     prefix=${2-""}
   local separator;  separator=${3-"_"}
@@ -123,9 +130,8 @@ load_config_yaml ()
 #
 # Read an INI string for configs
 #
-load_config_ini ()
-{
-  dump_method $*
+load_config_ini () {
+  dump_method "$@"
   local data;       eval "data=\"\${${1}}\""
   local prefix;     prefix=${2-""}
   local separator;  separator=${3-"_"}
@@ -140,12 +146,11 @@ load_config_ini ()
 #
 # Use defined config to set globals
 #
-eval_configs ()
-{
-  dump_method $*
+eval_configs () {
+  dump_method "$@"
   local test; local var; local type; local pt;
   for up in $*; do
-    for pi in $( bashful_config_count ); do
+    for pi in $( bashful_cfg_count ); do
       config="${_CP[${pi}]}"; var="${_CV[${pi}]}"; type="${_CT[${pi}]}";
       pt=( $( explode_array "|" "${config}" ) )
       for p in "${pt[@]}"; do
@@ -179,34 +184,31 @@ eval_configs ()
   done
 }
 export -f eval_configs
-bashful_config_count ()
-{
-  dump_method $*
+bashful_cfg_count () {
+  dump_method "$@"
   local i; i=0
   while [ "$i" -lt "${#_CP[@]}" ]; do
     echo -n "${i} "; i=$[$i+1];
   done
 }
-export -f bashful_config_count
+export -f bashful_cfg_count
 
-bashful_action_count ()
-{
-  dump_method $*
+bashful_actn_count () {
+  dump_method "$@"
   local i; i=0
   while [ "$i" -lt "${#_ACTIONS[@]}" ]; do
     echo -n "${i} "; i=$[$i+1];
   done
 }
-export -f bashful_action_count
-bashful_param_count ()
-{
-  dump_method $*
+export -f bashful_actn_count
+bashful_parm_count () {
+  dump_method "$@"
   local i; i=0
   while [ "$i" -lt "${#_PARAMS[@]}" ]; do
     echo -n "${i} "; i=$[$i+1];
   done
 }
-export -f bashful_param_count
+export -f bashful_parm_count
 #
 # Parameter parsing
 #

@@ -16,7 +16,7 @@
 #
 read_input()
 {
-  dump_method $*
+  dump_method "$@"
   local target; target=${1-"USER_INPUT"};   shift;
   local label;  label=${1-"${target}:"};    shift;
   local prompt; prompt=${1-""};             shift;
@@ -33,7 +33,7 @@ export -f read_input
 #
 readline_input()
 {
-  dump_method $*
+  dump_method "$@"
   local target; target=${1-"USER_INPUT"};   shift;
   local label;  label=${1-"${target}:"};    shift;
   local prompt; prompt=${1-""};             shift;
@@ -50,7 +50,7 @@ export -f read_input
 #
 yes_no()
 {
-  dump_method $*
+  dump_method "$@"
   local target; target=${1-"USER_INPUT"};   shift;
   local label;  label=${1-"${target}:"};    shift;
   local prompt; prompt=${1-""};             shift;
@@ -65,7 +65,7 @@ yes_no()
 #
 yes_no_return()
 {
-  dump_method $*
+  dump_method "$@"
   local label;  label=${1-"YES or NO?"};    shift;
   local prompt; prompt=${1-""};             shift;
   read_input TEMP "${label}" "${prompt}" "Y/n"
@@ -79,7 +79,7 @@ yes_no_return()
 #
 numeric_list()
 {
-  dump_method $*
+  dump_method "$@"
   local choices;    eval "choices=( \"\${${1}[@]}\" )"; shift;
   local target;     target=${1-"USER_INPUT"};           shift;
   local label;      label=${1-"${target}:"};            shift;
@@ -95,7 +95,7 @@ numeric_list()
 #
 input_line()
 {
-  dump_method $*
+  dump_method "$@"
   local target;     target=${1-"USER_INPUT"};           shift;
   local label;      label=${1-"${target}:"};            shift;
   local prompt;     prompt=${1-""};                     shift;
@@ -107,7 +107,7 @@ input_line()
 #
 input_readline()
 {
-  dump_method $*
+  dump_method "$@"
   local target;     target=${1-"USER_INPUT"};           shift;
   local label;      label=${1-"${target}:"};            shift;
   local prompt;     prompt=${1-""};                     shift;
@@ -119,7 +119,7 @@ input_readline()
 #
 confirm ()
 {
-  dump_method $*
+  dump_method "$@"
   local prompt;     prompt=${1-""};                     shift;
   read -p "${prompt} " -n 1 -r
 }

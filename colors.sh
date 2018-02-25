@@ -48,7 +48,7 @@ export -f register_colors
 #
 register_colors_tput ()
 {
-  dump_method $*
+  dump_method "$@"
   RESET=`tput sgr0`
   # Foreground ------------------ Background
   FG_BLK=`tput setaf ${_BLK}`;    BG_BLK=`tput setab ${_BLK}`;
@@ -81,6 +81,11 @@ register_colors_ascii ()
   FG_PUR='\033[35m';    BG_PUR='\033[45m';
   FG_CYN='\033[36m';    BG_CYN='\033[46m';
   FG_WHT='\033[37m';    BG_WHT='\033[47m';
+  # Text Effectsf
+  FX_BOLD_ON='\033[1m';         FX_BOLD_OFF='\033[0m';
+  FX_UNDERLINE_ON='\033[4m';    FX_UNDERLINE_OFF='\033[0m';
+  FX_STANDOUT_ON='\033[5m';     FX_STANDOUT_OFF='\033[0m';
+  FX_REVERSE='\033[7m'
 }
 export -f register_colors_ascii;
 # ASCII sequence helper
@@ -193,7 +198,7 @@ color_table_ascii ()
   echo "$( echo -ne "${data}" | groff -t -Tascii | sed '/^$/d' )"
 }
 export -f color_table_ascii
-action_ascii-colors()   { color_table_ascii; }
+#action_ascii-colors()   { color_table_ascii; }
 #usage_ascii-colors ()   { echo "ascii-colors"; }
 clrev ()        {   echo -n "${FX_REVERSE}";   }
 clbold ()       {   echo -n "${FX_BOLD_ON}";   }

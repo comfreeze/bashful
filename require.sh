@@ -55,7 +55,7 @@ load_config file "${_SCRIPT_PATH}/${_ENVFILE}"
 #
 function run ()
 {
-  dump_method $*
+  dump_method "$@"
   require help $*
   eval_request $*
   local act;    act="$( get_action )"; shift
@@ -69,7 +69,7 @@ export -f run
 #
 function bashful_root ()
 {
-  dump_method $*
+  dump_method "$@"
   echo "${_LIB_DIR}"
 }
 #
@@ -77,6 +77,6 @@ function bashful_root ()
 #
 function script_root ()
 {
-  dump_method $*
+  dump_method "$@"
   echo "${_SCRIPT_PATH}"
 }

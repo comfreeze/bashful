@@ -51,7 +51,7 @@ throw ()
 }
 json_array ()
 {
-  dump_method $*
+  dump_method "$@"
   local source;   eval source=( \"\${${1}[@]}\" );  shift
   local data;     data=();                          shift
   data=${source}
@@ -65,7 +65,7 @@ json_array ()
 #
 parse_json ()
 {
-  dump_method $*
+  dump_method "$@"
   local source;     source="$1";                                shift
   local prefix;     prefix=${1-"${_JSON_OUT_PREFIX}"};          shift
   local separator;  separator=${1-"${_JSON_OUT_SEPARATOR}"};    shift
@@ -83,7 +83,7 @@ export -f parse_json
 # Save local variables into JSON
 #
 save_json () {
-  dump_method $*
+  dump_method "$@"
 
 }
 export -f save_json

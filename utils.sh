@@ -3,8 +3,6 @@
 #
 # CONFIG
 ###################
-__WORKING_COMMAND=""
-declare -a __WORKING_ARRAY
 
 #
 # LIBRARIES
@@ -31,7 +29,7 @@ export -f assemble_command
 # Append options to a variable value
 #
 prepend_option () {
-  dump_method $*
+  dump_method "$@"
   insert_option 0 $*
 }
 export -f prepend_option
@@ -39,7 +37,7 @@ export -f prepend_option
 # Append options to a variable value
 #
 apply_option () {
-  dump_method $*
+  dump_method "$@"
   insert_option 1 $*
 }
 export -f apply_option
@@ -47,7 +45,7 @@ export -f apply_option
 # Insert options to a variable value
 #
 insert_option () {
-  dump_method $*
+  dump_method "$@"
   local POS;  POS=$1; shift
   local name; name=$1; shift
   if [[ "${POS}" = "0" ]]; then
@@ -62,7 +60,7 @@ export -f insert_option
 # Append options to a collection of variable values
 #
 prepend_options () {
-  dump_method $*
+  dump_method "$@"
   insert_options 0 $*
 }
 export -f prepend_options
@@ -70,7 +68,7 @@ export -f prepend_options
 # Append options to a collection of variable values
 #
 apply_options () {
-  dump_method $*
+  dump_method "$@"
   insert_options 1 $*
 }
 export -f apply_options
@@ -78,7 +76,7 @@ export -f apply_options
 # Append options to a collection of variable values
 #
 insert_options () {
-  dump_method $*
+  dump_method "$@"
   local POS;  POS=$1; shift
   local CMDS; eval "CMDS=( \"\${${1}[@]}\" )"; shift
   for CMD in "${CMDS[@]}"; do
@@ -112,7 +110,7 @@ export -f get_functions
 # in the current shell scope.
 #
 is_function () {
-#  dump_method $*
+#  dump_method "$@"
   if [ -n "$(type -t $1)" ] && [ "$(type -t $1)" = function ]; then
     echo "true";
   else
@@ -125,7 +123,7 @@ export -f is_function
 # or echo default (default: "")
 #
 get_function_output () {
-#  dump_method $*
+#  dump_method "$@"
   local f; f=${1-""};
   local d; d=${2-""};
   if [[ "$( is_function "${f}" )" = "true" ]]; then
@@ -139,7 +137,7 @@ export -f get_function_output
 # Generate filter string for usage group.
 #
 get_usage_group_filter () {
-  dump_method $*
+  dump_method "$@"
   local prefix; prefix=${1-""};     shift
   local remove; remove=${1-"true"}; shift
   local items;  items=( $( get_functions "${prefix}" "${remove}" ) )
@@ -155,7 +153,7 @@ export -f get_usage_group_filter
 # Evaluate request
 #
 eval_request () {
-  dump_method $*
+  dump_method "$@"
   __WORKING_ARRAY=()
   local p; p="$( get_usage_group_filter param_ )"
   local a; a="$( get_usage_group_filter action_ )"
@@ -184,7 +182,7 @@ export -f eval_request
 # Evaluate parameter
 #
 eval_param () {
-  dump_method $*
+  dump_method "$@"
   local cmd;    cmd="";
   local funcs;  funcs=( $( get_functions "${_PREFIX_PARAM}" ) )
   while test $# -gt 0; do
@@ -208,7 +206,7 @@ eval_param () {
 # Evaluate action
 #
 eval_action () {
-  dump_method $*
+  dump_method "$@"
   local cmd;    cmd="";
   local funcs;  funcs=( $( get_functions "${_PREFIX_ACTION}" ) )
   while test $# -gt 0; do
@@ -226,14 +224,14 @@ eval_action () {
   return 0
 }
 get_action () {
-  dump_method $*
+  dump_method "$@"
   echo "${__WORKING_COMMAND}"
 }
 #
 # Identify target
 #
 find_target () {
-#  dump_method $*
+#  dump_method "$@"
   local s;      eval "s=( \"\${${1}[@]}\" )";   shift;
   local t;      t=$1;                           shift;
   for i in "${s[@]}"; do

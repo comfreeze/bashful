@@ -4,11 +4,18 @@
 # CONFIG
 ###################
 _FAKE=false
+_V=0
 _V_DUMP=1
 _V_DUMP_PRETTY=2
-_V_DUMP_METHOD=4
+_V_DUMP_METHOD=2
 _FG_LABEL="FG_CYN"
 _FG_VALUE="FG_YLW"
+__TRACE=4
+__DEBUG=3
+__INFO=2
+__WARN=1
+__ERROR=0
+__SILENT=999
 
 #
 # LIBRARIES
@@ -19,13 +26,20 @@ require colors
 #
 # MODULE LOGIC
 ###################
+__is_level  () { (("${_V}" >= "$1")) && return 0 || return 1; }
+__is_silent () { if __is_level "${__SILENT}"; then return 0; fi; return 1; }
+__is_error  () { if __is_level "${__ERROR}";  then return 0; fi; return 1; }
+__is_warn   () { if __is_level "${__WARN}";   then return 0; fi; return 1; }
+__is_info   () { if __is_level "${__INFO}";   then return 0; fi; return 1; }
+__is_debug  () { if __is_level "${__DEBUG}";  then return 0; fi; return 1; }
+__is_trace  () { if __is_level "${__TRACE}";  then return 0; fi; return 1; }
 #
 # Verbosity helpers
 #
 verbose()
 {
-  if (( "${_V}" >= "$1" )); then
-    shift; stderr $*
+  if __is_level "$1"; then
+    shift; [[ ! -z "$@" ]] && stderr "$@"
   fi
 }
 export -f verbose
@@ -34,8 +48,7 @@ export -f verbose
 #
 verbosee()
 {
-  local level=$1;   shift;
-  if (( "${_V}" >= "${level}" )); then
+  if __is_level "$1"; then
     $( _="$*" dump _ )
   fi
   eval "$*"
@@ -51,7 +64,7 @@ export -f verbosef
 verboses()
 {
   local level; level="%${_V}s"
-  (( "${_V}" >= "1" )) && echo -n "-$( printf ${level} | tr " " "v" )"
+  __is_level "$1" && echo -n "-$( printf ${level} | tr " " "v" )"
 }
 export -f verboses
 verb()
@@ -66,11 +79,26 @@ export -f verb
 #
 dump ()
 {
-  if (( "${_V}" >= "${_V_DUMP}" )); then
-    stderr "${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}\"${!1}\"${RESET}"
+  local c; c=( $( caller 0 ) );
+  if __is_trace; then
+    stderr "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ) [${c[0]}]:" )${RESET}${!_FG_VALUE} VARIABLE:${RESET}"
+    for ARG in "$@"; do
+      stderr "  ${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}\"${!ARG}\"${RESET}"
+     done
   fi
 }
 export -f dump
+#
+# Debugging helpers
+#
+dprint ()
+{
+  local c; c=( $( caller 0 ) );
+  if __is_trace; then
+    stderr "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} ${FUNCNAME[1]}: $*\"${RESET}"
+  fi
+}
+export -f dprint
 dump_raw ()
 {
   if (( "${_V}" >= "${_V_DUMP}" )); then
@@ -81,7 +109,14 @@ export -f dump_raw
 dump_method ()
 {
   local c; c=( $( caller 0 ) );
-  verbose ${_V_DUMP_METHOD} "${RESET}${!_FG_LABEL}$( basename ${c[2]} ) [${c[0]}]:${RESET}${!_FG_VALUE} ${FUNCNAME[1]} $*${RESET}"
+  verbose ${__INFO} "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} --> ${FUNCNAME[1]}${RESET}"
+  ARGI=1
+  verbose ${__TRACE} "${RESET}${!_FG_LABEL}$( printf '%-20s' "  PARAMETERS:" )${RESET}"
+  while [[ $# -gt 0 ]]; do
+    verbose ${__TRACE} "  ${RESET}${!_FG_LABEL}[${ARGI}]:${RESET}${!_FG_VALUE} ${1}${RESET}"
+    (( ARGI+=1 ));
+    shift;
+  done;
 }
 export -f dump_method
 dump_array ()

@@ -4,7 +4,7 @@
 # CONFIG
 ###################
 _FAKE=false
-_V=0
+_V=${_V-0}
 _V_DUMP=1
 _V_DUMP_PRETTY=2
 _V_DUMP_METHOD=2
@@ -16,6 +16,8 @@ __INFO=2
 __WARN=1
 __ERROR=0
 __SILENT=999
+VFG="${RESET}${!_FG_LABEL}"
+HFG="${RESET}${!_FG_VALUE}"
 
 #
 # LIBRARIES
@@ -94,9 +96,8 @@ export -f dump
 dprint ()
 {
   local c; c=( $( caller 0 ) );
-  if __is_trace; then
-    stderr "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} ${FUNCNAME[1]}: $*\"${RESET}"
-  fi
+  stderr "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} ${FUNCNAME[1]}:${RESET}"
+  stderr "${RESET}${!_FG_VALUE}$*${RESET}"
 }
 export -f dprint
 dump_raw ()
@@ -109,11 +110,11 @@ export -f dump_raw
 dump_method ()
 {
   local c; c=( $( caller 0 ) );
-  verbose ${__INFO} "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} --> ${FUNCNAME[1]}${RESET}"
+  verbose ${__INFO} "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} O-> ${FUNCNAME[1]}${RESET}"
   ARGI=1
   verbose ${__TRACE} "${RESET}${!_FG_LABEL}$( printf '%-20s' "  PARAMETERS:" )${RESET}"
   while [[ $# -gt 0 ]]; do
-    verbose ${__TRACE} "  ${RESET}${!_FG_LABEL}[${ARGI}]:${RESET}${!_FG_VALUE} ${1}${RESET}"
+    verbose ${__TRACE} "${RESET}${!_FG_LABEL}  [${ARGI}]:${RESET}${!_FG_VALUE} ${1}${RESET}"
     (( ARGI+=1 ));
     shift;
   done;
@@ -181,35 +182,35 @@ EOF
 # setters as well as access to help immediately so
 # script will exit quickly.
 #
-while test $# -gt 0; do
-  case "$1" in
-    -v*)
-      param_verbosity "$1"
-#      echo "Verbosity: ${_V}"
-      shift
-    ;;
-#    -f|--fake)
-#      shift
-#      echo "Faking commands"
-#      _FAKE=true
-#    ;;
-#    -e|--env)
-#      shift
-#      _ENVFILE="$1"
-#      dump 1 _ENVFILE
+#while test $# -gt 0; do
+#  case "$1" in
+#    -v*)
+#      param_verbosity "$1"
+##      echo "Verbosity: ${_V}"
 #      shift
 #    ;;
-    *)
-      OPTS+=( $1 )
-      shift
-    ;;
-  esac
-done
-set -- ${OPTS[@]}
-(( "${_V}" >= "1" )) && set +ex
-(( "${_V}" >= "3" )) && set +e
-(( "${_V}" >= "5" )) && set -ex
-
-case "$-" in
-    *i*)    _INTERACTIVE=true ;;
-esac
+##    -f|--fake)
+##      shift
+##      echo "Faking commands"
+##      _FAKE=true
+##    ;;
+##    -e|--env)
+##      shift
+##      _ENVFILE="$1"
+##      dump 1 _ENVFILE
+##      shift
+##    ;;
+#    *)
+#      OPTS+=( $1 )
+#      shift
+#    ;;
+#  esac
+#done
+#set -- ${OPTS[@]}
+#(( "${_V}" >= "1" )) && set +ex
+#(( "${_V}" >= "3" )) && set +e
+#(( "${_V}" >= "5" )) && set -ex
+#
+#case "$-" in
+#    *i*)    _INTERACTIVE=true ;;
+#esac

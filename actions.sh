@@ -18,14 +18,14 @@ require array
 # Clear parameters
 #
 clear_actions () {
-  dump_method $*
+  dump_method "$@"
   unset _AP; unset _AT; unset _AM; unset _AD;
 }
 #
 # Read defined parameters
 #
 config_actions () {
-  dump_method $*
+  dump_method "$@"
   case $1 in
     yaml64) shift;  config_actions_yaml64 "$*"  ;;
     yaml)   shift;  config_actions_yaml "$*"    ;;
@@ -38,7 +38,7 @@ export -f config_actions
 # Read defined parameters
 #
 config_actions_bash () {
-  dump_method $*
+  dump_method "$@"
   local field=$( echo @|tr @ '\034' );
   clear_actions
   eval "__A=( \"\${${1}[@]}\" )"; shift
@@ -56,7 +56,7 @@ config_actions_bash () {
 # Base64 decode input before processing
 #
 config_actions_yaml64 () {
-  dump_method $*
+  dump_method "$@"
   __ACTIONS_WORKING__="$( base64_decode ${!1} )";
   echo "$( config_actions_yaml __ACTIONS_WORKING__ )"
 }
@@ -64,7 +64,7 @@ config_actions_yaml64 () {
 # Read a YAML string for actions
 #
 config_actions_yaml () {
-  dump_method $*
+  dump_method "$@"
   local data;       eval "data=\"\${${1}}\""
   local prefix;     prefix=${2-""}
   local separator;  separator=${3-"_"}
@@ -89,11 +89,11 @@ config_actions_yaml () {
 # Use defined parameters to set globals
 #
 eval_actions () {
-  dump_method $*
+  dump_method "$@"
   local actions; local action; local method; local type;
   actions=$*;
   for ua in $*; do
-    for ai in $( action_count ); do
+    for ai in $( bashful_actn_count ); do
       action="${_AP[${ai}]}"; method="${_AM[${ai}]}"; type="${_AT[${ai}]}";
       at=( $( explode_array "|" "${action}" ) )
       for a in "${at[@]}"; do

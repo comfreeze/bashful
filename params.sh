@@ -20,14 +20,15 @@ require array
 # Clear parameters
 #
 clear_params () {
-  dump_method $*
+  dump_method "$@"
   unset _PP; unset _PV; unset _PT; unset _PD;
 }
 #
 # Read defined parameters
 #
-config_params () {
-  dump_method $*
+config_params ()
+{
+  dump_method "$@"
   case $1 in
     yaml64) shift;  config_params_yaml64 "$*"   ;;
     yaml)   shift;  config_params_yaml "$*"     ;;
@@ -36,8 +37,9 @@ config_params () {
 }
 export -f config_params
 
-config_params_bash () {
-  dump_method $*
+config_params_bash ()
+{
+  dump_method "$@"
   clear_params
   eval "__P=( \"\${${1}[@]}\" )"; shift
 #  dump_array __P
@@ -54,16 +56,18 @@ export -f config_params_bash
 #
 # Base64 decode input before processing
 #
-config_params_yaml64 () {
-  dump_method $*
+config_params_yaml64 ()
+{
+  dump_method "$@"
   __PARAMS_WORKING__="$( base64_decode ${!1} )";
   echo "$( config_params_yaml __PARAMS_WORKING__ )"
 }
 #
 # Read a YAML string for params
 #
-config_params_yaml () {
-  dump_method $*
+config_params_yaml ()
+{
+  dump_method "$@"
   local data;       eval "data=\"\${${1}}\""
   local prefix;     prefix=${2-""}
   local separator;  separator=${3-"_"}
@@ -87,11 +91,12 @@ config_params_yaml () {
 #
 # Use defined parameters to set globals
 #
-eval_params () {
-  dump_method $*
+eval_params ()
+{
+  dump_method "$@"
   local test; local var; local type; local pt;
   for up in $*; do
-    for pi in $( param_count ); do
+    for pi in $( bashful_param_count ); do
       param="${_PP[${pi}]}"; var="${_PV[${pi}]}"; type="${_PT[${pi}]}";
       pt=( $( explode_array "|" "${param}" ) )
       for p in "${pt[@]}"; do

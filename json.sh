@@ -11,6 +11,13 @@ LEAFONLY=1
 PRUNE=1
 NO_HEAD=0
 NORMALIZE_SOLIDUS=1
+JQ=
+
+#
+# CUSTOM LIBRARIES
+###################
+require platform
+
 #
 # MODULE LOGIC
 ###################
@@ -20,11 +27,45 @@ then
   json_tokenize | json_parse
 fi
 
+case 1 in
+  is_apple)
+    JQ=$( bashful_root )/json/jq/osx-amd64
+    ;;
+  *)
+    case 1 in
+      is_64bit)
+        JQ=$( bashful_root )/json/jq/linux64
+        ;;
+      *)
+        JQ=$( bashful_root )/json/jq/linux32
+        ;;
+    esac
+    ;;
+esac
+[[ is_fake -eq 1 ]] && JQ="echo ${JQ}"
+
+throw ()
+{
+  stderr $*
+  exit 1
+}
+json_array ()
+{
+  dump_method "$@"
+  local source;   eval source=( \"\${${1}[@]}\" );  shift
+  local data;     data=();                          shift
+  data=${source}
+  data=${data//[/ }
+  data=${data//]/ }
+  data=${data//,/ }
+  echo "${data}"
+}
 #
 # Read JSON into local variables
 #
-parse_json () {
-  dump_method $*
+parse_json ()
+{
+  dump_method "$@"
   local source;     source="$1";                                shift
   local prefix;     prefix=${1-"${_JSON_OUT_PREFIX}"};          shift
   local separator;  separator=${1-"${_JSON_OUT_SEPARATOR}"};    shift
@@ -42,7 +83,7 @@ export -f parse_json
 # Save local variables into JSON
 #
 save_json () {
-  dump_method $*
+  dump_method "$@"
 
 }
 export -f save_json

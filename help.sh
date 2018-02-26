@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 #
-#
 # CONFIG
 ###################
 _PREFIX_USAGE="usage_"
@@ -18,8 +17,9 @@ require array
 #
 # CUSTOM LOGIC
 ###################
-usage_command() {
-  dump_method $*
+usage_command ()
+{
+  dump_method "$@"
   cat << EOF
 ${USAGE_TITLE}
 
@@ -28,8 +28,9 @@ EOF
 }
 export -f usage_command
 
-usage_group () {
-  dump_method $*
+usage_group ()
+{
+  dump_method "$@"
   local title;  title=$1;   shift
   local prefix; prefix=$1;  shift
   local items;  items=( $( get_functions "${prefix}" ) )
@@ -44,51 +45,61 @@ usage_group () {
 }
 export -f usage_group
 
-usage_options() {
-  dump_method $*
+usage_options ()
+{
+  dump_method "$@"
   usage_group " FLAGS:" "${_PREFIX_PARAM}"
 }
 export -f usage_options
 
-usage_actions() {
-  dump_method $*
+usage_actions ()
+{
+  dump_method "$@"
   usage_group " ACTIONS:" "${_PREFIX_ACTION}"
 }
 export -f usage_actions
 
-get_usage () {
-#  dump_method $*
+get_usage ()
+{
+#  dump_method "$@"
   echo "$( get_function_output "${_PREFIX_USAGE}$*" )"
 }
-get_usage_short () {
-#  dump_method $*
+get_usage_short ()
+{
+#  dump_method "$@"
   local d; d=( $( get_function_output "${_PREFIX_USAGE}$*" ) )
+  [[ "${d[0]}" == "" ]] && d="$*"
   echo "${d[0]}"
 }
-get_description () {
-#  dump_method $*
+get_description ()
+{
+#  dump_method "$@"
   echo "$( get_function_output "${_PREFIX_DESCRIPTION}$*" )"
 }
 
-usage_details() {
-  dump_method $*
+usage_details ()
+{
+  dump_method "$@"
   cat << EOF
 EOF
 }
 
-usage_advanced() {
-  dump_method $*
+usage_advanced ()
+{
+  dump_method "$@"
   cat << EOF
 EOF
 }
-_load_usage () {
-  dump_method $*
+_load_usage ()
+{
+  dump_method "$@"
   level=$1; shift
   usage=$1; shift
 #  eval "verb ${level} usage_${usage} $*"
   echo "$( usage_${usage} $* )"
 }
-_load_help () {
+_load_help ()
+{
   level=$1; shift
   usage=$1; shift
 #  eval "verb ${level} usage_${usage} $*"
@@ -101,8 +112,9 @@ _USAGE_FUNCS=( $( get_functions usage_ ) )
 #
 # Usage information
 #
-usage () {
-  dump_method $*
+usage ()
+{
+  dump_method "$@"
   for FUNC in "${_USAGE_FUNCS[@]}"; do
     if [[ "${FUNC}" = "$2" ]]; then
       local name; name=$2; shift

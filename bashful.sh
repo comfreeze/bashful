@@ -15,7 +15,7 @@ _BV=$( echo ${BASH_VERSION} | cut -d"." -f1 )
 # DEBUG CONFIG
 ###################
 ## Verbosity Level
-_V=4
+_V=0
 __TRACE=4
 __DEBUG=3
 __INFO=2
@@ -97,7 +97,7 @@ require router
 ## Verbosity controller
 function set__vlevel ()
 {
-  _V="$( grep -o "v" <<< "$1" | wc -l )";
+  export _V="$1";
 }
 export -f set__vlevel
 ## Verbosity controller - Count the V's

@@ -23,6 +23,7 @@ declare -a _ROUTER_PARAMS
 # LIBRARIES
 ###################
 require json
+require string
 #require actions
 #require params
 
@@ -189,9 +190,11 @@ route () {
     if [[ -z "${route}" ]]; then
       route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "$1" -r '.routes[] | select(.use | contains($search))' )
     fi
+    usage=$( echo "${route}" | jq -r '.use' )
     callback=$( echo "${route}" | jq -r '.callback' )
-    `${callback} $@`
-    shift
+    ${callback} $@
+    snip_count=$( char_count " " "${usage}" )
+    shift ${snip_count}
   done
 }
 export -f route

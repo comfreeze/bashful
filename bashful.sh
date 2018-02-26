@@ -15,7 +15,7 @@ _BV=$( echo ${BASH_VERSION} | cut -d"." -f1 )
 # DEBUG CONFIG
 ###################
 ## Verbosity Level
-_V=0
+_V=4
 __TRACE=4
 __DEBUG=3
 __INFO=2
@@ -53,8 +53,7 @@ declare -a __WORKING_ARRAY
 function verbose ()
 {
   local level;  level="$1";           shift
-  local c;      c=( $( caller 0 ) );
-  (( "${_V}" >= "${level}" )) && >&2 printf '%b\n' "$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" ) ${FUNCNAME[1]} $*"
+  (( "${_V}" >= "${level}" )) && >&2 printf '%b\n' "$*"
 }
 ## Require helper - locates and loads external scripts
 function require ()
@@ -74,7 +73,7 @@ function require ()
     ## Load the module - return on first match
     source "${path}/${file}" $@ && verbose ${__TRACE} "Dependency Module Loaded From Path: ${path}/${file}" && return
   done
-  verbose ${__INFO} "${RESET}"
+#  verbose ${__INFO} "${RESET}"
 }
 export -f require
 
@@ -93,33 +92,46 @@ load_config file "${_SCRIPT_PATH}/${_ENVFILE}"
 require router
 
 #
-# ROUTING
-###################
-## Define Module Routes
-route_load "$(cat <<ROUTE
-[
-	{
-	  "namespace": "bashful",
-	  "pattern": "-v*",
-		"use": "-v|-vv|-vvv|-vvvv",
-		"description": "Support various verbosity level specification.",
-		"callback": "",
-		"priority": "999"
-	},
-	{
-	  "namespace": "bashful",
-		"use": "-f|--fake",
-		"description": "Replace commands with echo equivalents to output what would be run."
-		"callback": "",
-		"priority": "1"
-	}
-]
-ROUTE
-)"
-
-#
 # MODULE LOGIC
 ###################
+## Verbosity controller
+function set__vlevel ()
+{
+  _V="$( grep -o "v" <<< "$1" | wc -l )";
+}
+export -f set__vlevel
+## Verbosity controller - Count the V's
+function set__vlevel_vs ()
+{
+  dump_method "$@"
+  local level="$( grep -o "v" <<< "$1" | wc -l )";
+  set__vlevel ${level}
+  return 1
+}
+export -f set__vlevel_vs
+## Verbosity controller - Direct string
+function set__vlevel_string ()
+{
+  dump_method "$@"
+  local level="__$( echo "$1" | tr '[:lower:]' '[:upper:]' )"
+  set__vlevel "${!level}"
+}
+export -f set__vlevel_string
+function get__vlevel ()
+{
+  echo "${_V}";
+}
+## Call Faking - Enabler
+function set__vfake ()
+{
+  dump_method "$@"
+  _FAKE=0;
+}
+## Call Faking - Echo Wrapper
+#function fakeable ()
+#{
+#
+#}
 ## Primary execution point
 function run ()
 {
@@ -128,3 +140,69 @@ function run ()
   route $*
 }
 export -f run
+
+#
+# ROUTING
+###################
+## Define Module Routes
+route_load "$(cat <<ROUTE
+[
+	{
+	  "namespace": "verbosity",
+	  "pattern": "-[v+]",
+		"use": "-v|-vv|-vvv|-vvvv",
+		"description": "Support various verbosity level specification.",
+		"callback": "set__vlevel_vs",
+		"priority": 999
+	},
+	{
+	  "namespace": "verbosity",
+		"use": "--error",
+		"description": "Set verbosity to error explicitly.",
+		"callback": "set__vlevel_string error",
+		"priority": 999
+	},
+	{
+	  "namespace": "verbosity",
+		"use": "--warn",
+		"description": "Set verbosity to warn explicitly.",
+		"callback": "set__vlevel_string warn",
+		"priority": 999
+	},
+	{
+	  "namespace": "verbosity",
+		"use": "--info",
+		"description": "Set verbosity to info explicitly.",
+		"callback": "set__vlevel_string info",
+		"priority": 999
+	},
+	{
+	  "namespace": "verbosity",
+		"use": "--debug",
+		"description": "Set verbosity to debug explicitly.",
+		"callback": "set__vlevel_string debug",
+		"priority": 999
+	},
+	{
+	  "namespace": "verbosity",
+		"use": "--trace",
+		"description": "Set verbosity to trace explicitly.",
+		"callback": "set__vlevel_string trace",
+		"priority": 999
+	}
+]
+ROUTE
+)"
+## Command Faking
+route_load "$(cat <<ROUTE
+{
+  "namespace": "bashful",
+  "use": "-f|--fake",
+  "description": "Replace commands with echo equivalents to output what would be run.",
+  "callback": "set__vfake",
+  "priority": 1
+}
+ROUTE
+)"
+## Route Testing
+#route_list

@@ -21,29 +21,135 @@ require platform
 #
 # MODULE LOGIC
 ###################
-if ([ "$0" = "$BASH_SOURCE" ] || ! [ -n "$BASH_SOURCE" ]);
-then
-  json_parse_options "$@"
-  json_tokenize | json_parse
-fi
+## Environment Configuration
+function configure_json ()
+{
+  dump_method "$@"
+  if ([ "$0" = "$BASH_SOURCE" ] || ! [ -n "$BASH_SOURCE" ]);
+  then
+    json_parse_options "$@"
+    json_tokenize | json_parse
+  fi
 
-case 1 in
-  is_apple)
-    JQ=$( bashful_root )/json/jq/osx-amd64
-    ;;
-  *)
-    case 1 in
-      is_64bit)
-        JQ=$( bashful_root )/json/jq/linux64
-        ;;
-      *)
-        JQ=$( bashful_root )/json/jq/linux32
-        ;;
-    esac
-    ;;
-esac
-[[ is_fake -eq 1 ]] && JQ="echo ${JQ}"
-
+  case 1 in
+    is_apple)
+      JQ=$( bashful_root )/json/jq/osx-amd64
+      ;;
+    *)
+      case 1 in
+        is_64bit)
+          JQ=$( bashful_root )/json/jq/linux64
+          ;;
+        *)
+          JQ=$( bashful_root )/json/jq/linux32
+          ;;
+      esac
+      ;;
+  esac
+  [[ is_fake -eq 1 ]] && JQ="echo ${JQ}"
+}
+## Object Merge Helper
+function json_merge_objects ()
+{
+  dump_method "$@"
+  local obj1;   obj1="${1}";    shift
+  local obj2;   obj2="${1}";    shift
+  ## Check for reference types
+  [ "${obj1:0:1}" != '{' ] && obj1="${!obj1}"
+  [ "${obj2:0:1}" != '{' ] && obj2="${!obj2}"
+  echo "${obj1}" "${obj2}" | jq -s 'reduce .[] as $item ({}; . * $item)' 2>&1
+}
+## Object Key Helpers
+function json_get_key ()
+{
+  dump_method "$@"
+  local key;    key="${1}";     shift
+  local obj;    obj="${1}";     shift
+  ## Check for reference types
+  [ "${obj:0:1}" != '{' ] && obj="${!obj}"
+  echo "${obj}" | jq -r ".${key}"
+}
+function json_set_key ()
+{
+  dump_method "$@"
+  local key;    key="${1}";     shift
+  local val;    val="${!1}";    shift
+  local obj;    obj="${1}";     shift
+  ## Check for reference types
+  [ "${obj:0:1}" != '{' ] && obj="${!obj}"
+  echo "${obj}" | jq -r ".${key} = \"${val}\""
+}
+function json_get_keys ()
+{
+  dump_method "$@"
+  local obj;    obj="${1}";     shift
+  ## Check for reference types
+  [ "${obj:0:1}" != '{' ] && obj="${!obj}"
+  echo "${obj}" | jq -c -r ' .[] | keys | add '
+}
+function json_get_object ()
+{
+  dump_method "$@"
+  local key;    key="${1}";     shift
+  local array;  array="${1}";   shift
+  ## Check for reference types
+  [ "${array:0:1}" != '[' ] && array="${!array}"
+  echo "${array}" | jq -r ".[] | objects | select(has(\"${key}\")).${key}"
+}
+## Object Appendation Helper
+function json_append_object ()
+{
+  dump_method "$@"
+  local key;    key="${1}";     shift
+  local obj1;   obj1="${1}";    shift
+  local obj2;   obj2="${1}";    shift
+  ## Check for reference types
+  [ "${obj1:0:1}" != '{' ] && obj1="${!obj1}"
+  [ "${obj2:0:1}" != '{' ] && obj2="${!obj2}"
+  echo "${obj1}" | jq -r ".${key}[.${key} | length] |= . + ${obj2}"
+}
+## Array Length Helper
+function json_array_length ()
+{
+  dump_method "$@"
+  local array; array="${1}";    shift
+  ## Check for reference types
+  [ "${array:0:1}" != '[' ] && array="${!array}"
+  echo "${array}" | jq '. | length' 2>&1
+}
+## Array Item Helper
+function json_get_array_item ()
+{
+  dump_method "$@"
+  local key;    key="${1}";     shift
+  local array;  array="${1}";   shift
+  ## Check for reference types
+  [ "${array:0:1}" != '[' ] && array="${!array}"
+  echo "${array}" | jq ".[$key]" 2>&1
+}
+## Value Search Helper
+function json_value_search ()
+{
+  dump_method "$@"
+  local key;    key="${1}";     shift
+  local target; target="${1}";  shift
+  local search; search="${1}";  shift
+  local obj;    obj="${1}";     shift
+  ## Check for reference types
+  [ "${obj:0:1}" != '{' ] && obj="${!obj}"
+  echo "${obj}" | jq -r ".${key}[] | select(.${target} | contains(\"${search}\"))"
+}
+## Array Grouping Helper
+function json_group_objects ()
+{
+  dump_method "$@"
+  local obj;    obj="${1}";     shift
+  local key1;   key1="${1}";    shift
+  local key2;   key2="${1}";    shift
+  ## Check for reference types
+  [ "${obj:0:1}" != '{' ] && obj="${!obj}"
+  echo "${obj}" | jq -r "[.${key1}[] | .] | group_by(.${key2}) | map({(.[0].${key2}): .})"
+}
 throw ()
 {
   stderr $*
@@ -252,3 +358,8 @@ json_parse_value () {
   [ "$print" -eq 1 ] && printf "[%s]\t%s\n" "$jpath" "$value"
   :
 }
+
+#
+# MODULE INIT
+###################
+configure_json

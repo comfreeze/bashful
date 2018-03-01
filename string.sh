@@ -60,6 +60,6 @@ function char_count ()
 {
   local CHAR;  CHAR="$1";   shift
   local INPUT; INPUT="$1";  shift
-  return=`awk -F"${CHAR}" '{print NF-1}' <<< "${INPUT}"`
+  return $(awk -F"${CHAR}" '{print NF-1}' <<< "${INPUT}")
 }
 export -f char_count

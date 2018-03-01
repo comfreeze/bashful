@@ -121,12 +121,24 @@ function get__vlevel ()
 {
   echo "${_V}";
 }
+export -f get__vlevel
 ## Call Faking - Enabler
 function set__vfake ()
 {
   dump_method "$@"
   _FAKE=0;
 }
+export -f set__vfake
+function get__vfake ()
+{
+  return ${_FAKE};
+}
+export -f get__vfake
+function is_fake ()
+{
+  get__vfake && return 0 || return 1
+}
+export -f is_fake
 ## Call Faking - Echo Wrapper
 #function fakeable ()
 #{

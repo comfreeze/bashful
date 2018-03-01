@@ -17,102 +17,58 @@ require array
 #
 # CUSTOM LOGIC
 ###################
-usage_command ()
+## Help Entrypoint
+function help_usage ()
 {
   dump_method "$@"
-  cat << EOF
-${USAGE_TITLE}
-
- $( basename $0 ) $*
-EOF
 }
-export -f usage_command
-
-usage_group ()
+## Usage List
+function usage_list ()
 {
   dump_method "$@"
-  local title;  title=$1;   shift
-  local prefix; prefix=$1;  shift
-  local items;  items=( $( get_functions "${prefix}" ) )
-  echo "${title}"
-  for i in "${items[@]}"; do
-    local u;    u=$( get_usage_short "$i" );
-    local d;    d=$( get_description "$i" );
-    if [[ "${#u}" > "0" ]]; then
-      printf "${_GROUP_FORMAT}" "${i}" "${u//\|/,}" "${d}"
-    fi
+  local usage="`echo "${__ACTIVE_ROUTES}" | jq -r '[.routes[] | {namespace, use, description}] | group_by(.namespace) | map({(.[0].namespace): .})'`"
+  local namespaces=( `echo "${usage}" | jq -c -r ' .[] | keys | add '` )
+  for namespace in "${namespaces[@]}"; do
+    routes="$(echo "${usage}" | jq -r ".[] | objects | select(has(\"${namespace}\")).${namespace}")"
+    local count;   count=`echo "${routes}" | jq '. | length' 2>&1`;
+    local i=0;
+    echo " ${namespace}:"
+    printf " %-35s | %s\n" "USE" "DESCRIPTION"
+    repeat_char "=" 80
+    while [[ ${i} -lt ${count} ]]; do
+      route="`echo "${routes}" | jq ".[$i]" 2>&1`"
+      use=$( echo "${route}" | jq -r '.use' )
+      description=$( echo "${route}" | jq -r '.description' )
+      printf " %-35s | %s\n" "${use}" "${description}"
+      (( i+=1 ));
+    done
+    echo
   done
 }
-export -f usage_group
-
-usage_options ()
+export -f usage_list
+## Usage List Namespace
+function usage_namespace_list ()
 {
   dump_method "$@"
-  usage_group " FLAGS:" "${_PREFIX_PARAM}"
+  local search;   search="$1";
+  local usage="`echo "${__ACTIVE_ROUTES}" | jq -r '[.routes[] | {namespace, use, description}] | group_by(.namespace) | map({(.[0].namespace): .})'`"
+  routes="$(echo "${usage}" | jq -r ".[] | objects | select(has(\"${search}\")).${search}")"
+  local count;   count=`echo "${routes}" | jq '. | length' 2>&1`;
+  local i=0;
+  echo " ${namespace}:"
+  printf " %-35s | %s\n" "USE" "DESCRIPTION"
+  repeat_char "=" 80
+  while [[ ${i} -lt ${count} ]]; do
+    route="`echo "${routes}" | jq ".[$i]" 2>&1`"
+    use=$( echo "${route}" | jq -r '.use' )
+    description=$( echo "${route}" | jq -r '.description' )
+    printf " %-35s | %s\n" "${use}" "${description}"
+    (( i+=1 ));
+  done
+  echo
 }
-export -f usage_options
-
-usage_actions ()
-{
-  dump_method "$@"
-  usage_group " ACTIONS:" "${_PREFIX_ACTION}"
-}
-export -f usage_actions
-
-get_usage ()
-{
-#  dump_method "$@"
-  echo "$( get_function_output "${_PREFIX_USAGE}$*" )"
-}
-get_usage_short ()
-{
-#  dump_method "$@"
-  local d; d=( $( get_function_output "${_PREFIX_USAGE}$*" ) )
-  [[ "${d[0]}" == "" ]] && d="$*"
-  echo "${d[0]}"
-}
-get_description ()
-{
-#  dump_method "$@"
-  echo "$( get_function_output "${_PREFIX_DESCRIPTION}$*" )"
-}
-
-usage_details ()
-{
-  dump_method "$@"
-  cat << EOF
-EOF
-}
-
-usage_advanced ()
-{
-  dump_method "$@"
-  cat << EOF
-EOF
-}
-_load_usage ()
-{
-  dump_method "$@"
-  level=$1; shift
-  usage=$1; shift
-#  eval "verb ${level} usage_${usage} $*"
-  echo "$( usage_${usage} $* )"
-}
-_load_help ()
-{
-  level=$1; shift
-  usage=$1; shift
-#  eval "verb ${level} usage_${usage} $*"
-  echo "$( help_${usage} $* )"
-}
-#
-# Capture defined usage functions
-#
-_USAGE_FUNCS=( $( get_functions usage_ ) )
-#
-# Usage information
-#
-usage ()
+## Usage Entrypoint
+function usage ()
 {
   dump_method "$@"
   for FUNC in "${_USAGE_FUNCS[@]}"; do
@@ -145,22 +101,34 @@ usage ()
   esac
 }
 export -f usage
+
 #
-# Verbosity parameter parsing and to-level config
-# setters as well as access to help immediately so
-# script will exit quickly.
-#
-while test $# -gt 0; do
-  case "$1" in
-    help)
-      shift
-      usage $0 $*
-      exit 1
-    ;;
-    *)
-      __WORKING_ARRAY+=( $1 )
-      shift
-    ;;
-  esac
-done
-set -- ${__WORKING_ARRAY[@]}
+# ROUTING
+###################
+## Help Commands
+route_load "$(cat <<ROUTE
+[
+  {
+    "namespace": "help",
+    "use": "-h|--help|help",
+    "description": "Display help",
+    "callback": "help_usage",
+    "priority": 1
+  },
+  {
+    "namespace": "help",
+    "use": "--list-commands",
+    "description": "Display all registered command usage.",
+    "callback": "usage_list",
+    "priority": 1
+  },
+  {
+    "namespace": "help",
+    "use": "--namespace-commands (namespace)",
+    "description": "Display all registered command usage.",
+    "callback": "usage_list",
+    "priority": 1
+  }
+]
+ROUTE
+)"

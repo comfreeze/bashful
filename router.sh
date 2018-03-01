@@ -15,7 +15,9 @@ read -r -d '' ROUTE_TEMPLATE <<ROUTE
 }
 ROUTE
 
-__ACTIVE_ROUTES="{\"routes\":[]}"
+__ACTIVE_ROUTES='{"routes":[]}'
+__ACTIVE_NAMESPACE='{}'
+__ACTIVE_ROUTE='{}'
 declare -a _ROUTER_ENDPOINTS
 declare -a _ROUTER_PARAMS
 
@@ -24,30 +26,6 @@ declare -a _ROUTER_PARAMS
 ###################
 require json
 require string
-#require actions
-#require params
-
-#
-# UPSTREAM REFERENCES
-###################
-#
-# ACTIONS HELPERS
-#
-# clear_actions - Clear current array collections
-# config_actions - Read defined parameters
-# config_actions_bash - Read defined parameters
-# config_actions_yaml64 - Base64 decode input before processing
-# config_actions_yaml - Read a YAML string for actions
-# eval_actions - Use defined parameters to set globals
-#
-# PARAMETER HELPERS
-#
-# clear_params - Clear parameters
-# config_params - Read defined parameters
-# config_params_bash
-# config_params_yaml64 - Base64 decode input before processing
-# config_params_yaml - Read a YAML string for params
-# eval_params - Use defined parameters to set globals
 
 #
 # MODULE LOGIC
@@ -161,9 +139,18 @@ export -f route_list
 #
 route_match () {
   dump_method "$@"
-  local endpoint; endpoint="$1";  shift
-  local options;  options="$1";   shift
-
+  local search;  search="$1"; shift
+  local route;
+  route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "${search}" -r '.routes[] | select(.pattern | contains($search))' )
+  if [[ -z "${route}" ]]; then
+    route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "${search}" -r '.routes[] | select(.use | contains($search))' )
+  fi
+  pattern=$( echo "${route}" | jq -r '.pattern' )
+  case "${search}" in
+    ${pattern})
+      echo "${route}"
+      ;;
+  esac
 }
 export -f route_match
 #

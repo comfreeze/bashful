@@ -45,6 +45,16 @@ verbose()
   fi
 }
 export -f verbose
+error       () { verbose ${__ERROR} "$@"; }
+export -f error
+warn        () { verbose ${__WARN}  "$@"; }
+export -f warn
+info        () { verbose ${__INFO}  "$@"; }
+export -f info
+debug       () { verbose ${__DEBUG} "$@"; }
+export -f debug
+trace       () { verbose ${__TRACE} "$@"; }
+export -f trace
 #
 # Verbosity helpers
 #
@@ -110,11 +120,11 @@ export -f dump_raw
 dump_method ()
 {
   local c; c=( $( caller 0 ) );
-  verbose ${__INFO} "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} O-> ${FUNCNAME[1]}${RESET}"
+  info "${RESET}${!_FG_LABEL}$( printf '%-20s' "$( basename ${c[2]} ):${c[0]}" )${RESET}${!_FG_VALUE} O-> ${FUNCNAME[1]}${RESET}"
   ARGI=1
-  verbose ${__TRACE} "${RESET}${!_FG_LABEL}$( printf '%-20s' "  PARAMETERS:" )${RESET}"
+  trace "${RESET}${!_FG_LABEL}$( printf '%-20s' "  PARAMETERS:" )${RESET}"
   while [[ $# -gt 0 ]]; do
-    verbose ${__TRACE} "${RESET}${!_FG_LABEL}  [${ARGI}]:${RESET}${!_FG_VALUE} ${1}${RESET}"
+    trace "${RESET}${!_FG_LABEL}  [${ARGI}]:${RESET}${!_FG_VALUE} ${1}${RESET}"
     (( ARGI+=1 ));
     shift;
   done;
@@ -122,7 +132,8 @@ dump_method ()
 export -f dump_method
 dump_array ()
 {
-  eval "verbose 2 \"${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}\"\${${1}[@]}\"\"${RESET}"
+  eval "verbose 2 \"${RESET}${!_FG_LABEL}$1=${RESET}${!_FG_VALUE}\"\${${1}[@]}\"\" "
+  verbose 2 "${RESET}"
 }
 export -f dump_array
 dump_array_pretty ()

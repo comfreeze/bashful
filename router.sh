@@ -30,14 +30,45 @@ require string
 #
 # MODULE LOGIC
 ###################
-#
-# New route definitions
+## Routing variable helpers
+function set__active_routes ()
+{
+  dump_method "$@"
+  __ACTIVE_ROUTES="$1"
+}
+function get__active_routes ()
+{
+  dump_method "$@"
+  echo "${__ACTIVE_ROUTES}"
+}
+function set__active_namespace ()
+{
+  dump_method "$@"
+  __ACTIVE_NAMESPACE="$1"
+}
+function get__active_namespace ()
+{
+  dump_method "$@"
+  echo "${__ACTIVE_NAMESPACE}"
+}
+function set__active_route ()
+{
+  dump_method "$@"
+  __ACTIVE_ROUTE="$1"
+}
+function get__active_route ()
+{
+  dump_method "$@"
+  echo "${__ACTIVE_ROUTE}"
+}
+## New route definitions
 #
 # Params:
 #  options  - array    - One or more custom parameters
 #  callback - function - Receiver function for events to endpoint(s)
 #
-route_create () {
+function route_create ()
+{
   dump_method "$@"
   local options;  options="$1";   shift
   local callback; callback="$1";  shift
@@ -45,16 +76,15 @@ route_create () {
   dump callback
 
 }
-export -f route_create
-#
-# New route definitions
+## New route definitions
 #
 # Params:
 #  routes   - array    - One or more custom parameters
 #  endpoint - array    - One or more endpoint patterns to match
 #  callback - function - Receiver function for events to endpoint(s)
 #
-route_load () {
+function route_load ()
+{
   dump_method "$@"
   local route;  route="$1";   shift
   local pattern;
@@ -62,126 +92,147 @@ route_load () {
   if [[ "${route:0:1}" == "[" ]]; then
     route_load_array "${route}"
   elif [[ "${route:0:1}" == "{" ]]; then
-    route=$( echo "${ROUTE_TEMPLATE}" "${route}" | jq -s 'reduce .[] as $item ({}; . * $item)' 2>&1 )
-    pattern=$( echo "${route}" | jq -r '.pattern' )
-    use=$( echo "${route}" | jq -r '.use' )
+    route=$( json_merge_objects ROUTE_TEMPLATE route )
+    pattern=$( json_get_key pattern route )
+    use=$( json_get_key use route )
     if [ -z "${pattern// }" ]; then
-      route=$( echo "${route}" | jq -r ".pattern = \"${use}\"" )
+      route=$( json_set_key pattern use route )
     fi
-    __ACTIVE_ROUTES=$( echo "${__ACTIVE_ROUTES}" | jq -r ".routes[.routes | length] |= . + ${route}" )
+    __ACTIVE_ROUTES=$( json_append_object routes __ACTIVE_ROUTES route )
   fi
 }
-export -f route_load
-#
-# New route definitions - Array format
+## New route definitions - Array format
 #
 # Params:
 #  routes   - array    - One or more custom parameters
-route_load_array () {
+function route_load_array ()
+{
   dump_method "$@"
   local routes;  routes="$1";   shift
-  dump routes
-  dump ROUTE_TEMPLATE
-  local count;   count=`echo "${routes}" | jq '. | length' 2>&1`;
+  local count;   count=$( json_array_length routes );
   local i=0;
   while [[ ${i} -lt ${count} ]]; do
     route="`echo "${routes}" | jq ".[$i]" 2>&1`"
-    dump route
     route_load "${route}"
     (( i+=1 ));
   done
 }
-export -f route_load_array
-#
-# Extend route definition
+## Extend route definition
 #
 # Params:
 #  endpoint - string   - Specific endpoint patterns to match
 #  callback - function - Receiver function for events to endpoint(s)
 #  options  - array    - One or more custom parameters
 #
-route_extend () {
+function route_extend ()
+{
   dump_method "$@"
   local endpoint; endpoint="$1";  shift
   local callback; callback="$1";  shift
   local options;  options="$1";   shift
 
 }
-export -f route_extend
-#
-# Clear Routes
+## Clear Routes
 #
 # Params:
 #  endpoint - array  - One or more endpoint patterns to match
 #
-route_delete () {
+function route_delete ()
+{
   dump_method "$@"
   local endpoint; endpoint="$1";  shift
 
 }
-export -f route_delete
-#
-# List Routes
+## List Routes
 #
 # Params:
 #  endpoint - array  - One or more endpoint patterns to match
 #
-route_list () {
+function route_list ()
+{
   dump_method "$@"
   dprint "${__ACTIVE_ROUTES}"
 }
-export -f route_list
-#
-# Match Route
+## Match Route
 #
 # Params:
 #  options  - array  - One or more custom parameters
 #
-route_match () {
+function route_match ()
+{
   dump_method "$@"
   local search;  search="$1"; shift
   local route;
-  route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "${search}" -r '.routes[] | select(.pattern | contains($search))' )
+  info "Searching Usages: ${search}"
+  route=$( json_value_search "routes" "use" "${search}" __ACTIVE_ROUTES )
   if [[ -z "${route}" ]]; then
-    route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "${search}" -r '.routes[] | select(.use | contains($search))' )
+    info "Searching Patterns: ${search}"
+    route=$( json_value_search "routes" "pattern" "${search}" __ACTIVE_ROUTES )
   fi
-  pattern=$( echo "${route}" | jq -r '.pattern' )
+  pattern=$( json_get_key pattern route )
   case "${search}" in
     ${pattern})
       echo "${route}"
       ;;
   esac
 }
-export -f route_match
+## Global Routing Parameters
 #
-# Global Routing Parameters
-#
-route_param () {
+function route_param ()
+{
   dump_method "$@"
   local param;    param="$1";     shift
   local values;   values="$1";    shift
   local rules;    rules="$1";     shift
 
 }
-export -f route_param
-#
-# Router Entry-point
+## Router Entry-point
 #
 # Params:
 #  * - Any parameters
 #
-route () {
+function route ()
+{
   dump_method "$@"
   while [[ "$#" -gt 0 ]]; do
-    route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "$1" -r '.routes[] | select(.pattern | contains($search))' )
-    if [[ -z "${route}" ]]; then
-      route=$( echo "${__ACTIVE_ROUTES}" | jq --arg search "$1" -r '.routes[] | select(.use | contains($search))' )
-    fi
+    route="$( route_match "$@" )"
     usage=$( echo "${route}" | jq -r '.use' )
     callback=$( echo "${route}" | jq -r '.callback' )
-    ${callback} $@
-    snip_count=$( char_count " " "${usage}" )
-    shift ${snip_count}
+    if [[ ! -z "${callback}" ]]; then
+      shift
+      ${callback} $@
+      unset callback
+      ## Clear associated parameters
+      char_count ' ' "${usage}"
+      param_count=$?
+      ## Loop to shift count of spaces
+      while [[ "${param_count}" > 0 ]]; do
+        shift
+        (( param_count-=1 ))
+      done
+    else
+      ## Remove current option if no route matched
+      warn "No route match found: $1"
+      shift
+    fi
   done
 }
+
+#
+# MODULE EXPORTS
+###################
+export -f set__active_routes
+export -f get__active_routes
+export -f set__active_namespace
+export -f get__active_namespace
+export -f set__active_route
+export -f get__active_route
+export -f route_create
+export -f route_load
+export -f route_load_array
+export -f route_extend
+export -f route_delete
+export -f route_list
+export -f route_match
+export -f route_param
 export -f route

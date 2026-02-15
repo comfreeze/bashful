@@ -169,12 +169,17 @@ function route_match ()
     info "Searching Patterns: ${search}"
     route=$( json_value_search "routes" "pattern" "${search}" __ACTIVE_ROUTES )
   fi
-  pattern=$( json_get_key pattern route )
-  case "${search}" in
-    ${pattern})
-      echo "${route}"
-      ;;
-  esac
+  local pattern; pattern=$( json_get_key pattern route )
+  local IFS='|'
+  local p
+  for p in ${pattern}; do
+    case "${search}" in
+      ${p})
+        echo "${route}"
+        return
+        ;;
+    esac
+  done
 }
 ## Global Routing Parameters
 #

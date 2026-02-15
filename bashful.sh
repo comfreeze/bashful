@@ -22,6 +22,9 @@ __INFO=2
 __WARN=1
 __ERROR=0
 __SILENT=999
+## Display Label Colors (overridden by verbosity.sh)
+_FG_LABEL="FG_CYN"
+_FG_VALUE="FG_YLW"
 ## Fake Commands
 _FAKE=false
 ## Interactivity Toggle

@@ -17,7 +17,14 @@ require array
 function help_usage ()
 {
   dump_method "$@"
+  echo
+  [[ -n "${USAGE_TITLE}" ]] && echo " ${USAGE_TITLE}" && echo
+  echo " $( basename "$0" ) [options] [command] [parameters]"
+  echo
+  usage_list
+  exit 0
 }
+export -f help_usage
 ## Usage List
 function usage_list ()
 {

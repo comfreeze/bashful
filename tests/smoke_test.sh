@@ -6,47 +6,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "${SCRIPT_DIR}/.." && pwd )"
 
-PASS=0
-FAIL=0
-
-assert ()
-{
-  local label; label="$1"; shift
-  if "$@" >/dev/null 2>&1; then
-    echo "  PASS: ${label}"
-    (( PASS+=1 ))
-  else
-    echo "  FAIL: ${label}"
-    (( FAIL+=1 ))
-  fi
-}
-
-assert_output ()
-{
-  local label;   label="$1";   shift
-  local expect;  expect="$1";  shift
-  local output;  output="$( "$@" 2>&1 )"
-  if [[ "${output}" == *"${expect}"* ]]; then
-    echo "  PASS: ${label}"
-    (( PASS+=1 ))
-  else
-    echo "  FAIL: ${label} (expected '${expect}' in output)"
-    (( FAIL+=1 ))
-  fi
-}
-
-assert_not_empty ()
-{
-  local label;   label="$1";   shift
-  local output;  output="$( "$@" 2>&1 )"
-  if [[ -n "${output}" ]]; then
-    echo "  PASS: ${label}"
-    (( PASS+=1 ))
-  else
-    echo "  FAIL: ${label} (output was empty)"
-    (( FAIL+=1 ))
-  fi
-}
+source "${SCRIPT_DIR}/harness.sh"
 
 ########################################
 # ROUTER PATH (bashful.sh)
@@ -171,8 +131,4 @@ assert_not_empty "working_file returns a temp path" \
 ########################################
 # SUMMARY
 ########################################
-echo
-echo "==============================="
-echo " Results: ${PASS} passed, ${FAIL} failed"
-echo "==============================="
-[[ ${FAIL} -eq 0 ]] && exit 0 || exit 1
+test_summary

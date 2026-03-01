@@ -1,0 +1,30 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  test:
+    runs-on: gem-cluster
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Bash 4+
+        run: |
+          bash_version=$(bash -c 'echo ${BASH_VERSINFO[0]}')
+          echo "Bash version: ${bash_version}"
+          if [[ "${bash_version}" -lt 4 ]]; then
+            echo "ERROR: Bash 4+ required"
+            exit 1
+          fi
+
+      - name: Verify jq
+        run: |
+          jq --version || { echo "ERROR: jq not found"; exit 1; }
+
+      - name: Run tests
+        run: bash tests/run_tests.sh
